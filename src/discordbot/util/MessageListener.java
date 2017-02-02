@@ -12,7 +12,7 @@ public class MessageListener extends ListenerAdapter {
 					event.getAuthor().getName(),
 					event.getMessage().getContent());
 		} else {
-			System.out.printf("[%s][%s] %s: %s",
+			System.out.printf("[%s][%s] %s: %s\n",
 					event.getGuild().getName(),
 					event.getTextChannel().getName(),
 					event.getMember().getEffectiveName(),
