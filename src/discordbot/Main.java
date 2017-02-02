@@ -1,5 +1,8 @@
 package discordbot;
 
+import discordbot.command.CommandHandler;
+import discordbot.command.KickCommand;
+import discordbot.command.RollCommand;
 import discordbot.util.MessageListener;
 import net.dv8tion.jda.core.JDA;
 
@@ -12,7 +15,12 @@ public class Main {
 				System.exit(0);
 			}
 			
+			CommandHandler commandHandler = new CommandHandler();
+			commandHandler.addCommandListener(new RollCommand());
+			commandHandler.addCommandListener(new KickCommand());
+			
 			jda.addEventListener(new MessageListener());
+			jda.addEventListener(commandHandler);
 	} // method main
 
 } // class Main
