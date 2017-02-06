@@ -11,16 +11,9 @@ import net.dv8tion.jda.core.exceptions.GuildUnavailableException;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 
 public class KickCommand implements CommandListener {
-	
-	public final String COMMAND = "kick";
 
 	@Override
 	public void onCommandReceived(CommandReceivedEvent event) {
-		// check for correct command
-		if (!event.getCommand().equals(COMMAND)) {
-			return;
-		}
-		
 		// event information
 		Message message = event.getMessageReceivedEvent().getMessage();
 		MessageChannel channel = event.getMessageReceivedEvent().getChannel();

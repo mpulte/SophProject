@@ -16,8 +16,8 @@ public class Main {
 			}
 			
 			CommandHandler commandHandler = new CommandHandler();
-			commandHandler.addCommandListener(new RollCommand());
-			commandHandler.addCommandListener(new KickCommand());
+			commandHandler.addCommandListener("roll", new RollCommand());
+			commandHandler.addCommandListener("kick", new KickCommand());
 			
 			jda.addEventListener(new MessageListener());
 			jda.addEventListener(commandHandler);

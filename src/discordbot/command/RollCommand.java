@@ -8,16 +8,10 @@ import net.dv8tion.jda.core.entities.User;
 
 public class RollCommand implements CommandListener {
 	
-	public final String COMMAND = "roll";
 	private final int DEFAULT = 100;
 
 	@Override
 	public void onCommandReceived(CommandReceivedEvent event) {
-		// check for correct command
-		if (!event.getCommand().equals(COMMAND)) {
-			return;
-		}
-		
 		// event information
 		User author = event.getMessageReceivedEvent().getAuthor();
 		MessageChannel channel = event.getMessageReceivedEvent().getChannel();
