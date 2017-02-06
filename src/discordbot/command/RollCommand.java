@@ -6,8 +6,12 @@ import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 
-public class RollCommand implements CommandListener {
+public class RollCommand extends CommandListener {
 	
+	public RollCommand(CommandHandler handler) {
+		super(handler);
+	} // constructor
+
 	private final int DEFAULT = 100;
 
 	@Override
@@ -36,8 +40,14 @@ public class RollCommand implements CommandListener {
 	} // method onCommandReceivedEvent
 	
 	@Override
-	public boolean useChannel(ChannelType type) {
+	public boolean usesChannel(ChannelType type) {
 		return true;
 	} // method useChannel
+
+	@Override
+	public String getDescription() {
+		return "Returns a random number between 1 and n, where n is the argument supplied. "
+				+ "If no argument is supplied, n = 100 by default.";
+	} // method getDescription
 
 } // class RollCommand

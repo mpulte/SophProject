@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 
 public class DiscordBot {
-	private static DiscordBot bot;
+	private static DiscordBot instance;
 	private JDA jda;
 	
 	private DiscordBot() {
@@ -17,10 +17,10 @@ public class DiscordBot {
 	} // constructor
 	
 	public static DiscordBot getInstance() {
-		if (bot == null) {
-			bot = new DiscordBot();
+		if (instance == null) {
+			instance = new DiscordBot();
 		}
-		return bot;
+		return instance;
 	} // method DiscordBot
 	
 	private void initializeJDA() {
@@ -53,7 +53,7 @@ public class DiscordBot {
 		if (jda != null) {
 			jda.shutdown();
 		}
-		bot = null;
+		instance = null;
 	} // method shutdown
 
 } // class DiscordBot

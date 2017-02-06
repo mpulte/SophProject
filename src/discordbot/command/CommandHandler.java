@@ -14,13 +14,23 @@ public class CommandHandler extends ListenerAdapter {
 		listeners = new HashMap<>();
 	} // constructor
 	
-	public void addCommandListener(String command, CommandListener listener) {
-		listeners.put(command, listener);
+	public void addCommandListener(String command, Class<? extends CommandListener> listnerClass) {
+		try {
+			listeners.put(command, listnerClass.getConstructor(CommandHandler.class).newInstance(this));
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+		}
 	} // method addCommandListener
+	
+	public Map<String, CommandListener> getCommandsListeners() {
+		return listeners;
+	}
 
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getMessage().getContent().startsWith(CommandReceivedEvent.PREFIX)) {
+		if (event.getMessage().getContent().startsWith(CommandReceivedEvent.PREFIX)
+				&& !event.getAuthor().isBot()) {
 			CommandReceivedEvent commandEvent = CommandReceivedEvent.buildCommand(event);
 			for (String key : listeners.keySet()) {
 				if (commandEvent.getCommand().equals(key)) {
