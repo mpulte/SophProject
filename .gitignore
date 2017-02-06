@@ -1,3 +1,4 @@
 /bin/
 .classpath
+.package
 .settings/org.eclipse.buildship.core.prefs
