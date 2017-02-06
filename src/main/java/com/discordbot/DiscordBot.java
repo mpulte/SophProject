@@ -1,8 +1,9 @@
-package discordbot;
+package com.discordbot;
 
 import javax.security.auth.login.LoginException;
 
-import discordbot.util.Util;
+import com.discordbot.util.Util;
+
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;

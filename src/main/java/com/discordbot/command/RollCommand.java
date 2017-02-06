@@ -1,4 +1,4 @@
-package discordbot.command;
+package com.discordbot.command;
 
 import java.util.Random;
 

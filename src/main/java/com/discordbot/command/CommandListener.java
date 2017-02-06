@@ -1,4 +1,4 @@
-package discordbot.command;
+package com.discordbot.command;
 
 import net.dv8tion.jda.core.entities.ChannelType;
 
