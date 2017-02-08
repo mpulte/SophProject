@@ -64,4 +64,9 @@ public class KickCommand extends CommandListener {
 		return "Kicks all users mentioned. Author and bot must have permission. Bot must be above users in heirarchy.";
 	} // method getDescription
 	
+	@Override
+	public String getHelp() {
+		return ""; // TODO: add help
+	} // method getHelp
+	
 } // class KickCommand

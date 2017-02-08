@@ -17,5 +17,6 @@ public abstract class CommandListener {
 	public abstract void onCommandReceived(CommandReceivedEvent event);
 	public abstract boolean usesChannel(ChannelType type);
 	public abstract String getDescription();
+	public abstract String getHelp();
 	
 } // class CommandFactory

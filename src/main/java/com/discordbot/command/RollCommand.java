@@ -49,5 +49,10 @@ public class RollCommand extends CommandListener {
 		return "Returns a random number between 1 and n, where n is the argument supplied. "
 				+ "If no argument is supplied, n = 100 by default.";
 	} // method getDescription
+	
+	@Override
+	public String getHelp() {
+		return ""; // TODO: add help
+	} // method getHelp
 
 } // class RollCommand
