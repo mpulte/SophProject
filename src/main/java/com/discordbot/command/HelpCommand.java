@@ -31,5 +31,10 @@ public class HelpCommand extends CommandListener {
 	public String getDescription() {
 		return "Lists available commands and their descriptions.";
 	} // method getDescription
+	
+	@Override
+	public String getHelp() {
+		return ""; // TODO: add help
+	} // method getHelp
 
 } // class HelpCommand
