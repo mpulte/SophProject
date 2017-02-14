@@ -1,17 +1,12 @@
 package com.discordbot.util;
 
-import java.io.File;
-
 import javax.swing.JFileChooser;
+import java.io.File;
 
 public final class FileUtil {
 	
 	public static final String OPEN = "Open";
-	public static final String SAVE = "Save As";
-	public static final String SELECT = "Select File or Folder";
-	public static final String SELECT_FILE = "Select File";
-	public static final String SELECT_FOLDER = "Select Folder";
-	
+	public static final String SAVE = "Save";
 	
 	public static File chooseFile(String title, boolean allFiles, int selectionMode) {
 		// set up file chooser

@@ -1,22 +1,22 @@
 package com.discordbot.command;
 
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-
 public class CommandReceivedEvent {
 	
 	public static String PREFIX = "!";
-	
+
 	private MessageReceivedEvent event;
 	private String command;
 	private List<String> args;
 
-	public CommandReceivedEvent(MessageReceivedEvent event, String command, List<String> args) {
+	private CommandReceivedEvent(MessageReceivedEvent event, String tag, List<String> args) {
 		this.event = event;
-		this.command = command;
+		this.command = tag;
 		this.args = args;
 	} // constructor
 	
@@ -35,9 +35,9 @@ public class CommandReceivedEvent {
 		return event;
 	} // method getEvent
 
-	public String getCommand() {
+	public String getTag() {
 		return command;
-	} // method getCommand
+	} // method getTag
 
 	public List<String> getArgs() {
 		return args;

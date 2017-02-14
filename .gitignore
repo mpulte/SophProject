@@ -1,4 +1,33 @@
-/bin/
+# project files
+src/test/
+commands.db
+settings.db
+Main.java
+
+# music files
+*.mp3
+*.aac
+*.m4a
+*.wav
+*.flac
+*.ogg
+
+# gradle
+build/
+.gradle/
+
+# eclipse files
 .classpath
 .project
-.settings/org.eclipse.buildship.core.prefs
+.settings/
+bin/
+
+# intellij files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# netbeans files
+.nb-gradle/
+*.nb-gradle-properties
