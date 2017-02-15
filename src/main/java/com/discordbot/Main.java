@@ -3,6 +3,7 @@ package com.discordbot;
 import com.discordbot.command.CommandHandler;
 import com.discordbot.command.HelpCommand;
 import com.discordbot.command.KickCommand;
+import com.discordbot.command.MemeCommand;
 import com.discordbot.command.RollCommand;
 import com.discordbot.util.MessageListener;
 
@@ -22,6 +23,7 @@ public class Main {
 		commandHandler.addCommandListener("help", HelpCommand.class);
 		commandHandler.addCommandListener("roll", RollCommand.class);
 		commandHandler.addCommandListener("kick", KickCommand.class);
+		commandHandler.addCommandListener("meme", MemeCommand.class);
 		
 		jda.addEventListener(commandHandler);
 		jda.addEventListener(new MessageListener());
