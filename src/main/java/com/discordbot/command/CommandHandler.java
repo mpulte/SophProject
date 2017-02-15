@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandHandler extends ListenerAdapter {
+
     private static final SimpleLog LOG = SimpleLog.getLog("ComHandler");
 
     private Map<String, CommandListener> listeners;
