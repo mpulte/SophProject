@@ -14,9 +14,9 @@ public class CommandHandler extends ListenerAdapter {
 		listeners = new HashMap<>();
 	} // constructor
 	
-	public void addCommandListener(String command, Class<? extends CommandListener> listnerClass) {
+	public void addCommandListener(String command, Class<? extends CommandListener> listenerClass) {
 		try {
-			listeners.put(command, listnerClass.getConstructor(CommandHandler.class).newInstance(this));
+			listeners.put(command, listenerClass.getConstructor(CommandHandler.class).newInstance(this));
 		} catch (Exception e) {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
