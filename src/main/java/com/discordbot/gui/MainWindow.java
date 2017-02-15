@@ -63,6 +63,8 @@ public class MainWindow extends JFrame {
         defaults.add(new CommandSetting(HelpCommand.class, "help", false));
         defaults.add(new CommandSetting(KickCommand.class, "kick", false));
         defaults.add(new CommandSetting(RollCommand.class, "roll", false));
+        defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
+        
 
         CommandDB database = new CommandDB();
         for (CommandSetting defaultSetting : defaults) {
