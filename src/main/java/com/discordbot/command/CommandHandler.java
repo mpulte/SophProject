@@ -9,40 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandHandler extends ListenerAdapter {
-<<<<<<< HEAD
-	
-	private Map<String, CommandListener> listeners;
-	
-	public CommandHandler() {
-		listeners = new HashMap<>();
-	} // constructor
-	
-	public void addCommandListener(String command, Class<? extends CommandListener> listenerClass) {
-		try {
-			listeners.put(command, listenerClass.getConstructor(CommandHandler.class).newInstance(this));
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
-	} // method addCommandListener
-	
-	public Map<String, CommandListener> getCommandsListeners() {
-		return listeners;
-	}
 
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if (event.getMessage().getContent().startsWith(CommandReceivedEvent.PREFIX)
-				&& !event.getAuthor().isBot()) {
-			CommandReceivedEvent commandEvent = CommandReceivedEvent.buildCommand(event);
-			for (String key : listeners.keySet()) {
-				if (commandEvent.getCommand().equals(key)) {
-					listeners.get(key).onCommandReceived(commandEvent);
-				}
-			}
-		}
-	} // method onCommandReceivedEvent
-=======
     private static final SimpleLog LOG = SimpleLog.getLog("ComHandler");
 
     private Map<String, CommandListener> listeners;
@@ -112,6 +79,5 @@ public class CommandHandler extends ListenerAdapter {
             }
         }
     } // method onCommandReceivedEvent
->>>>>>> refs/remotes/origin/master
 
 } // class CommandHandler

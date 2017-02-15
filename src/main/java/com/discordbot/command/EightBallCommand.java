@@ -17,7 +17,7 @@ public class EightBallCommand extends CommandListener {
 					"The magic 8-ball says: Concentrate and try again.",
 					"The magic 8-ball says: Don't count on it.",
 					"The magic 8-ball says: It is certain.",
-					"It is decidedly so.",
+					"The magic 8-ball says: It is decidedly so.",
 					"The magic 8-ball says: Most likely.",
 					"The magic 8-ball says: My reply is no.",
 					"The magic 8-ball says: My sources say no.",
