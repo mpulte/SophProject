@@ -44,7 +44,9 @@ public class CommandHandler extends ListenerAdapter {
                 return this;
             }
             addCommandListener(setting.getTag(), setting.getCls());
-        } else {
+        } else if (listeners.containsKey(setting.getTag())
+                && listeners.get(setting.getTag()).getClass() == setting.getCls()) {
+            // only remove if the class matches the current class
             removeCommandListener(setting.getTag());
         }
         return this;
