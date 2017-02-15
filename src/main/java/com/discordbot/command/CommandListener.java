@@ -13,6 +13,10 @@ public abstract class CommandListener {
 	public CommandHandler getHandler() {
 		return handler;
 	} // method getHandler
+
+    public void setHandler(CommandHandler handler) {
+	    this.handler = handler;
+	} // class setHandler
 	
 	public abstract void onCommandReceived(CommandReceivedEvent event);
 	public abstract boolean usesChannel(ChannelType type);

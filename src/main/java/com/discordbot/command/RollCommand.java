@@ -1,10 +1,10 @@
 package com.discordbot.command;
 
-import java.util.Random;
-
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
+
+import java.util.Random;
 
 public class RollCommand extends CommandListener {
 	
@@ -46,7 +46,7 @@ public class RollCommand extends CommandListener {
 
 	@Override
 	public String getDescription() {
-		return "Returns a random number between 1 and n, where n is the argument supplied. "
+		return "Rolls a random number between 1 and n, where n is the argument supplied. "
 				+ "If no argument is supplied, n = 100 by default.";
 	} // method getDescription
 	

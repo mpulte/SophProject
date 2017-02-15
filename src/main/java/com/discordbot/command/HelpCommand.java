@@ -1,9 +1,9 @@
 package com.discordbot.command;
 
-import java.util.Map;
-
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
+
+import java.util.Map;
 
 public class HelpCommand extends CommandListener {
 
@@ -15,11 +15,15 @@ public class HelpCommand extends CommandListener {
 	public void onCommandReceived(CommandReceivedEvent event) {
 		MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 
-		Map<String, CommandListener> commands = getHandler().getCommandsListeners();
-		for (String key : commands.keySet()) {
-			channel.sendMessage(CommandReceivedEvent.PREFIX + key + "     "
-					+ commands.get(key).getDescription()).queue();
-		}
+		if (getHandler() != null) {
+            Map<String, CommandListener> commands = getHandler().getCommandListeners();
+            for (String key : commands.keySet()) {
+                channel.sendMessage(CommandReceivedEvent.PREFIX + key + "     "
+                        + commands.get(key).getDescription()).queue();
+            }
+        } else {
+		    channel.sendMessage("Unable to help at this time").queue();
+        }
 	} // method onCommandReceived
 
 	@Override
