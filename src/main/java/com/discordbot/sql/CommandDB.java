@@ -12,7 +12,6 @@ import java.util.List;
 
 public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends CommandListener>> {
 
-    private static final String DB_FILE = "commands.db";
     private static final int DB_VERSION = 1;
 
     // table constants
@@ -31,10 +30,8 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     // drop table statement
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + COMMAND;
 
-    private static final ConnectionPool connectionPool = ConnectionPool.getInstance(DB_FILE);
-
     public CommandDB() {
-        super(connectionPool, DB_VERSION);
+        super(DB_VERSION);
     } // constructor
 
     @Override
@@ -56,7 +53,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     @Override
     protected void onUpgrade(int oldVersion, int newVersion) {
         onReset();
-        LOG.info("Upgrading " + DB_FILE + " from version " + oldVersion + " to " + newVersion);
+        LOG.info("Upgrading CommandDB from version " + oldVersion + " to " + newVersion);
     } // method onReset
 
     @Override

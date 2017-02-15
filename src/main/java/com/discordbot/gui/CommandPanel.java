@@ -6,8 +6,8 @@ import com.discordbot.sql.CommandDB;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.List;
 
 public class CommandPanel extends JPanel {
@@ -34,7 +34,7 @@ public class CommandPanel extends JPanel {
         }
     } // constructor
 
-    private class SettingPanel extends JPanel implements ActionListener {
+    private class SettingPanel extends JPanel {
 
         private final CommandSetting setting;
         private JLabel label = null;
@@ -62,18 +62,27 @@ public class CommandPanel extends JPanel {
         private void addTextBox() {
             textField = new JTextField(5);
             textField.setText(setting.getTag());
-            textField.addActionListener(this);
+            textField.addActionListener(e -> update());
+            textField.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {}
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    update();
+                }
+            });
             add(textField);
         } // method addTextBox
 
         private void addCheckBox() {
             checkBox = new JCheckBox(setting.isEnabled() ? "on" : "off", setting.isEnabled());
-            checkBox.addActionListener(this);
+            checkBox.addActionListener(e -> update());
             add(checkBox);
         } // method addCheckBox
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
+        private void update() {
+            // check if the text has changed
             String text = textField.getText().trim();
             if (!setting.getTag().equals(text)) {
                 if (text.contains(" ")) {
@@ -81,6 +90,7 @@ public class CommandPanel extends JPanel {
                             "Command tags cannot contain spaces.",
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
+                    textField.setText(setting.getTag());
                 } else {
                     // we want both the setting and checkbox to match before making changes
                     // if not, the listener will be added or removed when the enabled setting is updated
@@ -88,37 +98,35 @@ public class CommandPanel extends JPanel {
                     setting.setTag(text);
                     if (setting.isEnabled() && checkBox.isSelected()) {
                         commandHandler.removeCommandListener(oldText);
-                        commandHandler.addCommandListener(setting);
-                        if (!setting.isEnabled()) {
-                            checkBox.setSelected(false);
-                            JOptionPane.showMessageDialog(null,
-                                    "You cannot have two commands with the same tag.\n" +
-                                            label.getText() + " has been disabled.",
-                                    "Warning",
-                                    JOptionPane.WARNING_MESSAGE);
-                        }
                     }
                     commandDB.update(setting);
                 }
             }
+
+            // check if the check box has changed
             if (checkBox.isSelected() != setting.isEnabled()) {
                 setting.setEnabled(checkBox.isSelected());
-                if (checkBox.isSelected()) {
-                    commandHandler.addCommandListener(setting);
-                    if (!setting.isEnabled()) {
-                        checkBox.setSelected(false);
-                        JOptionPane.showMessageDialog(null,
-                                "You cannot have two commands with the same tag.\n" +
-                                        label.getText() + " has been disabled.",
-                                "Warning",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
-                } else {
-                    commandHandler.removeCommandListener(setting.getTag());
-                }
-                commandDB.update(setting);
             }
-        } // method actionPerformed
+
+            // update the command
+            commandHandler.setCommandListener(setting);
+
+            // check that update was successful
+            if (!setting.isEnabled() && checkBox.isSelected()) {
+                checkBox.setSelected(false);
+                JOptionPane.showMessageDialog(null,
+                        "You cannot have two commands with the same tag.\n" +
+                                label.getText() + " has been disabled.",
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+
+            // update the database
+            commandDB.update(setting);
+
+            // update check box text
+            checkBox.setText(checkBox.isSelected() ? "on" : "off");
+        } // method update
 
     } // class SettingPanel
 

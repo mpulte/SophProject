@@ -52,10 +52,6 @@ public class MainWindow extends JFrame {
         return instance;
     } // method getInstance
 
-    public static void main(String[] args) {
-        MainWindow.getInstance();
-    }
-
     private void buildPanels() {
         setLayout(new BorderLayout());
         add(new ControlPanel(), BorderLayout.NORTH);
@@ -73,11 +69,11 @@ public class MainWindow extends JFrame {
             CommandSetting savedSetting = database.select(defaultSetting.getCls());
             if (savedSetting == null) {
                 if (defaultSetting.isEnabled()) {
-                    commandHandler.addCommandListener(defaultSetting);
+                    commandHandler.setCommandListener(defaultSetting);
                 }
                 database.insert(defaultSetting);
             } else if (savedSetting.isEnabled()) {
-                commandHandler.addCommandListener(savedSetting);
+                commandHandler.setCommandListener(savedSetting);
                 if (!savedSetting.isEnabled()) {
                     database.update(savedSetting);
                 }
@@ -108,5 +104,9 @@ public class MainWindow extends JFrame {
         } // method windowClosed
 
     } // class ExtraWindowListener
+
+    public static void main(String[] args) {
+        MainWindow.getInstance();
+    } // method main
 
 } // Class MainFrame

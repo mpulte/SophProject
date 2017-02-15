@@ -25,32 +25,36 @@ public class CommandHandler extends ListenerAdapter {
 
     public CommandHandler addCommandListener(String tag, Class<? extends CommandListener> cls) {
         try {
-            CommandListener listener = cls.getConstructor(CommandHandler.class).newInstance(this);
-            listeners.put(tag, listener);
-            LOG.info("Command added: " + listener.getClass().getName());
+            addCommandListener(tag, cls.getConstructor(CommandHandler.class).newInstance(this));
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             LOG.log(e);
         }
         return this;
     } // method addCommandListener
 
-    public CommandHandler addCommandListener(CommandSetting setting) {
-        if (listeners.containsKey(setting.getTag())) {
-            if (listeners.get(setting.getTag()).getClass() != setting.getCls()) {
-                setting.setEnabled(false);
-            }
-            return this;
-        }
+    public CommandHandler setCommandListener(CommandSetting setting) {
         if (setting.isEnabled()) {
+            // if key exists, we won't try to add the command
+            if (listeners.containsKey(setting.getTag())) {
+                // if key is from a different listener, disable the setting
+                if (listeners.get(setting.getTag()).getClass() != setting.getCls()) {
+                    setting.setEnabled(false);
+                }
+                return this;
+            }
             addCommandListener(setting.getTag(), setting.getCls());
+        } else {
+            removeCommandListener(setting.getTag());
         }
         return this;
     } // method addCommandListener
 
     public CommandHandler removeCommandListener(String tag) {
-        String className = listeners.get(tag).getClass().getName();
-        listeners.remove(tag);
-        LOG.info("Command removed: " + className);
+        if (listeners.containsKey(tag)) {
+            String className = listeners.get(tag).getClass().getName();
+            listeners.remove(tag);
+            LOG.info("Command removed: " + className);
+        }
         return this;
     } // method removeCommandListener
 

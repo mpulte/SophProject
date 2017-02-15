@@ -8,6 +8,8 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public abstract class SQLiteDatabase<Relation, Key> {
 
+    private static final String DB_FILE = "bot.db";
+
     protected static final SimpleLog LOG = SimpleLog.getLog("SQLite");
 
     protected static final int TRUE = 1;
@@ -26,29 +28,24 @@ public abstract class SQLiteDatabase<Relation, Key> {
             INFO_KEY   + " TEXT     NOT NULL  PRIMARY KEY, " +
             INFO_VALUE + " INTEGER     NOT NULL);";
 
-    private static final String SELECT_TABLE =
-            "SELECT name FROM sqlite_master " +
-            "WHERE type='table' AND name='" + INFO + "';";
+    protected static final ConnectionPool connectionPool = ConnectionPool.getInstance(DB_FILE);
 
-    private final ConnectionPool connectionPool;
-
-    protected SQLiteDatabase(ConnectionPool connectionPool, int version) {
+    protected SQLiteDatabase(int version) {
         if (version < 1) {
             throw new IllegalArgumentException("Database version must be 1 or greater");
         }
-        this.connectionPool = connectionPool;
         initialize(version);
     } // constructor
 
     private void initialize(int newVersion) {
         // create tables if they don't exist
         query(CREATE_TABLE);
+        onCreate();
 
         // update table if necessary
         int oldVersion = selectVersion();
         if (oldVersion == 0) {
-            onCreate();
-            insertVersion(1);
+            insertVersion(newVersion);
         } else if (newVersion > oldVersion) {
             onUpgrade(oldVersion, newVersion);
             updateVersion(newVersion);
@@ -70,7 +67,7 @@ public abstract class SQLiteDatabase<Relation, Key> {
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setString(1, "version");
+            statement.setString(1, getClass().getName());
             resultSet = statement.executeQuery();
             int version = 0;
             if (resultSet.next()) {
@@ -90,12 +87,12 @@ public abstract class SQLiteDatabase<Relation, Key> {
     private int insertVersion(int version) {
        String query = "INSERT INTO " + INFO + " (" + INFO_KEY + "," + INFO_VALUE + ")" +
                "VALUES (?,?)";
-       return query(query, "version", Integer.toString(version));
+       return query(query, getClass().getName(), Integer.toString(version));
     } // method selectVersion
 
     private int updateVersion(int version) {
         String query = "UPDATE " + INFO + " SET " + INFO_VALUE + " = ? WHERE " + INFO_KEY + " = ?";
-        return query(query, Integer.toString(version), "version");
+        return query(query, Integer.toString(version), getClass().getName());
     } // method selectVersion
 
     protected abstract void onCreate();

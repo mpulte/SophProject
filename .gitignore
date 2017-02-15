@@ -1,8 +1,8 @@
 # project files
 src/test/
-commands.db
-settings.db
 Main.java
+Test.java
+*.db
 
 # music files
 *.mp3
