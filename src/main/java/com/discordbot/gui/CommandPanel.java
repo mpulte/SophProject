@@ -25,8 +25,8 @@ public class CommandPanel extends JPanel {
         // get the settings stored in the database
         List<CommandSetting> settings = commandDB.selectAll();
 
-        // set the layout to a GridLayout with 1 col and row for each setting
-        setLayout(new GridLayout(3,1));
+        // set the layout to a box layout with vertical orientation
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // add each row to the layout
         for (CommandSetting setting : settings) {
