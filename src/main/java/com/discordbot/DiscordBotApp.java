@@ -6,6 +6,7 @@ import com.discordbot.gui.ControlPane;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -15,7 +16,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DiscordBotApp extends Application {
 
@@ -27,8 +30,11 @@ public class DiscordBotApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // set title
+        // setup stage
         primaryStage.setTitle("DiscordBot");
+        primaryStage.setOnCloseRequest(event -> {
+            Platform.exit();
+        });
 
         // setup DiscordBot
         DiscordBot.getInstance()
@@ -47,7 +53,7 @@ public class DiscordBotApp extends Application {
         // setup scene
         Scene scene = new Scene(layout, WIDTH, HEIGHT);
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(WIDTH + PADDING.getLeft() + PADDING.getRight());
+        primaryStage.setMinWidth(WIDTH + PADDING.getLeft() + PADDING.getRight())
         primaryStage.show();
     } // method start
 
@@ -59,7 +65,6 @@ public class DiscordBotApp extends Application {
 
     private Region buildCommandPane() {
         CommandPane commandPane = new CommandPane(commandHandler);
-//        System.out.println(commandPane.prefWidth(Region.USE_COMPUTED_SIZE) + "x" + commandPane.prefHeight(Region.USE_COMPUTED_SIZE));
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setStyle("-fx-background-color:transparent");
@@ -68,11 +73,7 @@ public class DiscordBotApp extends Application {
         scrollPane.prefWidthProperty().bind(commandPane.prefWidthProperty());
 
         TitledPane titledPane = new TitledPane("Commands", scrollPane);
-//        TitledPane titledPane = new TitledPane("Commands", commandPane);
         titledPane.setCollapsible(false);
-//        System.out.println(titledPane.minWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.minHeight(Region.USE_COMPUTED_SIZE));
-//        System.out.println(titledPane.prefWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.prefHeight(Region.USE_COMPUTED_SIZE));
-//        System.out.println(titledPane.maxWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.maxHeight(Region.USE_COMPUTED_SIZE));
         return titledPane;
     } // method buildCommandPane
 
