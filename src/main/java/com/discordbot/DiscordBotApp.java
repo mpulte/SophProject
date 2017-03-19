@@ -53,7 +53,7 @@ public class DiscordBotApp extends Application {
         // setup scene
         Scene scene = new Scene(layout, WIDTH, HEIGHT);
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(WIDTH + PADDING.getLeft() + PADDING.getRight())
+        primaryStage.setMinWidth(WIDTH + PADDING.getLeft() + PADDING.getRight());
         primaryStage.show();
     } // method start
 

@@ -6,26 +6,26 @@ import java.util.Map;
 public class StrawPoll {
 
     private String question;
-    private String[] choices;
+    private String[] options;
     private Map<String, Integer> responses;
 
-    public StrawPoll(String question, String[] choices) {
+    public StrawPoll(String question, String[] options) {
         this.question = question;
-        this.choices = choices;
+        this.options = options;
         responses = new HashMap<>();
     } // constructor
 
     public String getQuestion() {
         return question;
-    } // method getQuestion
+    } // method getOptions
 
-    public String[] getChoices() {
-        return choices;
-    } // method getChoices
+    public String[] getOptions() {
+        return options;
+    } // method getOptions
 
     public void putResponse(String key, Integer choice) {
         // check for index out of bounds
-        if (choice < 0 || choice >= choices.length) {
+        if (choice < 0 || choice >= options.length) {
             return;
         }
 
@@ -51,7 +51,7 @@ public class StrawPoll {
     } // method percent
 
     public double[] percents() {
-        double[] percents = new double[choices.length];
+        double[] percents = new double[options.length];
         for (int i = 0; i < percents.length; i++) {
             percents[i] = percent(i);
         }
