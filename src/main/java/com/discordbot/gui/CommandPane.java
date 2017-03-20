@@ -15,10 +15,10 @@ import java.util.List;
 
 public class CommandPane extends GridPane {
 
-    private final Insets PADDING = new Insets(5, 5, 5, 5);
+    private final static Insets PADDING = new Insets(5, 5, 5, 5);
 
-    private final double H_GAP = 20d;
-    private final double V_GAP = 5d;
+    private final static double H_GAP = 20d;
+    private final static double V_GAP = 5d;
 
     private CommandHandler commandHandler;
     private CommandDB commandDB;

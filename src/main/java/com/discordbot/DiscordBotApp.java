@@ -6,6 +6,7 @@ import com.discordbot.gui.ControlPane;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
@@ -23,17 +24,16 @@ public class DiscordBotApp extends Application {
     private final int WIDTH = 400;
     private final int HEIGHT = 300;
 
-    private CommandHandler commandHandler;
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // set title
+        // setup stage
         primaryStage.setTitle("DiscordBot");
+        primaryStage.setOnCloseRequest(event -> {
+            Platform.exit();
+        });
 
         // setup DiscordBot
-        DiscordBot.getInstance()
-                .addEventListener(new MessageListener())
-                .addEventListener(commandHandler = new CommandHandler());
+        DiscordBot.getInstance().addEventListener(new MessageListener());
         loadCommands();
 
         // setup layout
@@ -58,8 +58,7 @@ public class DiscordBotApp extends Application {
     } // method buildControlPane
 
     private Region buildCommandPane() {
-        CommandPane commandPane = new CommandPane(commandHandler);
-//        System.out.println(commandPane.prefWidth(Region.USE_COMPUTED_SIZE) + "x" + commandPane.prefHeight(Region.USE_COMPUTED_SIZE));
+        CommandPane commandPane = new CommandPane(DiscordBot.getInstance().getCommandHandler());
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setStyle("-fx-background-color:transparent");
@@ -68,11 +67,7 @@ public class DiscordBotApp extends Application {
         scrollPane.prefWidthProperty().bind(commandPane.prefWidthProperty());
 
         TitledPane titledPane = new TitledPane("Commands", scrollPane);
-//        TitledPane titledPane = new TitledPane("Commands", commandPane);
         titledPane.setCollapsible(false);
-//        System.out.println(titledPane.minWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.minHeight(Region.USE_COMPUTED_SIZE));
-//        System.out.println(titledPane.prefWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.prefHeight(Region.USE_COMPUTED_SIZE));
-//        System.out.println(titledPane.maxWidth(Region.USE_COMPUTED_SIZE) + "x" + titledPane.maxHeight(Region.USE_COMPUTED_SIZE));
         return titledPane;
     } // method buildCommandPane
 
@@ -89,11 +84,11 @@ public class DiscordBotApp extends Application {
             CommandSetting savedSetting = database.select(defaultSetting.getCls());
             if (savedSetting == null) {
                 if (defaultSetting.isEnabled()) {
-                    commandHandler.setCommandListener(defaultSetting);
+                    DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
                 }
                 database.insert(defaultSetting);
             } else if (savedSetting.isEnabled()) {
-                commandHandler.setCommandListener(savedSetting);
+                DiscordBot.getInstance().getCommandHandler().setCommandListener(savedSetting);
                 if (!savedSetting.isEnabled()) {
                     database.update(savedSetting);
                 }
