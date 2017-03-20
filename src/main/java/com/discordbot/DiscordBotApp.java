@@ -16,17 +16,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class DiscordBotApp extends Application {
 
     private final Insets PADDING = new Insets(10, 10, 10, 10);
     private final int WIDTH = 400;
     private final int HEIGHT = 300;
-
-    private CommandHandler commandHandler;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -37,9 +33,7 @@ public class DiscordBotApp extends Application {
         });
 
         // setup DiscordBot
-        DiscordBot.getInstance()
-                .addEventListener(new MessageListener())
-                .addEventListener(commandHandler = new CommandHandler());
+        DiscordBot.getInstance().addEventListener(new MessageListener());
         loadCommands();
 
         // setup layout
@@ -64,7 +58,7 @@ public class DiscordBotApp extends Application {
     } // method buildControlPane
 
     private Region buildCommandPane() {
-        CommandPane commandPane = new CommandPane(commandHandler);
+        CommandPane commandPane = new CommandPane(DiscordBot.getInstance().getCommandHandler());
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setStyle("-fx-background-color:transparent");
@@ -90,11 +84,11 @@ public class DiscordBotApp extends Application {
             CommandSetting savedSetting = database.select(defaultSetting.getCls());
             if (savedSetting == null) {
                 if (defaultSetting.isEnabled()) {
-                    commandHandler.setCommandListener(defaultSetting);
+                    DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
                 }
                 database.insert(defaultSetting);
             } else if (savedSetting.isEnabled()) {
-                commandHandler.setCommandListener(savedSetting);
+                DiscordBot.getInstance().getCommandHandler().setCommandListener(savedSetting);
                 if (!savedSetting.isEnabled()) {
                     database.update(savedSetting);
                 }

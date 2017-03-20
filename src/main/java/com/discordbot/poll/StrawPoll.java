@@ -23,10 +23,10 @@ public class StrawPoll {
         return options;
     } // method getOptions
 
-    public void putResponse(String key, Integer choice) {
+    public void putResponse(String key, Integer choice) throws IndexOutOfBoundsException {
         // check for index out of bounds
         if (choice < 0 || choice >= options.length) {
-            return;
+            throw new IndexOutOfBoundsException("Choice " + choice + " is not valid");
         }
 
         // add or update response
@@ -37,17 +37,25 @@ public class StrawPoll {
         }
     } // method putResponse
 
-    public double percent(int index) {
-        if (responses.size() == 0) {
-            return 0;
-        }
+    @SuppressWarnings("WeakerAccess")
+    public int totalResponses() {
+        return responses.size();
+    } // method totalResponses
+
+    @SuppressWarnings("WeakerAccess")
+    public int responseCount(int index) {
         int total = 0;
         for (int response : responses.values()) {
             if (response == index) {
                 ++total;
             }
         }
-        return ((double)total) / ((double) responses.size()) * 100d;
+        return total;
+    } // method responseCount
+
+    @SuppressWarnings("WeakerAccess")
+    public double percent(int index) {
+        return totalResponses() > 0 ? ((double) responseCount(index)) / ((double) totalResponses()) * 100d : 0;
     } // method percent
 
     public double[] percents() {
@@ -58,4 +66,23 @@ public class StrawPoll {
         return percents;
     } // method percents
 
+    public String resultsAsString() {
+        String results = "Poll Results: \n" + getQuestion() + "\n";
+        for (int i = 0; i < getOptions().length; ++i) {
+            results += "(" + i +")\t" + getOptions()[i] +
+                    "\n\t\tResponses: " + responseCount(i) + " Percent: " + percent(i) + "\n";
+        }
+        results += "Total Responses: " + totalResponses();
+        return results;
+    } // method resultsAsString
+
+    @Override
+    public String toString() {
+        String message = "Poll: \n" + getQuestion() + "\n";
+        for (int i = 0; i < getOptions().length; ++i) {
+            message += "(" + i +")\t" + getOptions()[i] + "\n";
+        }
+        message += "Total Responses: " + totalResponses();
+        return message;
+    } // method String
 } // class StrawPoll

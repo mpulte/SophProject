@@ -1,5 +1,6 @@
 package com.discordbot;
 
+import com.discordbot.command.CommandHandler;
 import com.discordbot.util.Util;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
@@ -15,12 +16,16 @@ public class DiscordBot {
 	private static DiscordBot instance;
 
 	private JDA jda;
+	private CommandHandler commandHandler;
+
     private Map<Class<? extends EventListener>, EventListener> listeners;
     private boolean canRestart;
 	
 	private DiscordBot() {
 	    listeners = new HashMap<>();
 	    canRestart = true;
+	    commandHandler = new CommandHandler();
+	    addEventListener(commandHandler);
 	} // constructor
 	
 	public static synchronized DiscordBot getInstance() {
@@ -110,5 +115,9 @@ public class DiscordBot {
         }
         return this;
     } // method addEventListener
+
+    public CommandHandler getCommandHandler() {
+        return commandHandler;
+    } // method getCommandHandler
 
 } // class DiscordBot

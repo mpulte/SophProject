@@ -17,9 +17,12 @@ public class HelpCommand extends CommandListener {
 
 		if (getHandler() != null) {
             Map<String, CommandListener> commands = getHandler().getCommandListeners();
+            String message = "";
             for (String key : commands.keySet()) {
-                channel.sendMessage(CommandReceivedEvent.PREFIX + key + "     "
-                        + commands.get(key).getDescription()).queue();
+                message += CommandReceivedEvent.PREFIX + key + '\t' + commands.get(key).getDescription() + '\n';
+            }
+            if (!message.isEmpty()) {
+                channel.sendMessage(message.substring(0, message.length() - 1)).queue();
             }
         } else {
 		    channel.sendMessage("Unable to help at this time").queue();
