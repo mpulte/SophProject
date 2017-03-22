@@ -74,9 +74,10 @@ public class CommandHandler extends ListenerAdapter {
         if (event.getMessage().getContent().startsWith(CommandReceivedEvent.PREFIX)
                 && !event.getAuthor().isBot()) {
             CommandReceivedEvent commandEvent = CommandReceivedEvent.buildCommand(event);
-            for (String key : listeners.keySet()) {
-                if (commandEvent.getTag().equals(key)) {
-                    listeners.get(key).onCommandReceived(commandEvent);
+            for (Map.Entry<String, CommandListener> entry : listeners.entrySet()) {
+                if (commandEvent.getTag().equals(entry.getKey())
+                        && entry.getValue().usesChannel(event.getChannelType())) {
+                    entry.getValue().onCommandReceived(commandEvent);
                 }
             }
         }

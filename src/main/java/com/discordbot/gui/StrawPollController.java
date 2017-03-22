@@ -176,8 +176,9 @@ public class StrawPollController implements FXMLController {
             timer = new Timer();
             timer.schedule(
                     new TimerTask() {
-                            @Override
-                            public void run() {
+                        @Override
+                        public void run() {
+                            Platform.runLater(() -> {
                                 int hours = timeField.getHours();
                                 int minutes = timeField.getMinutes();
                                 int seconds = timeField.getSeconds();
@@ -194,7 +195,7 @@ public class StrawPollController implements FXMLController {
                                     seconds = 59;
                                 } else {
                                     //  stop the timer
-                                    Platform.runLater(() -> stopListening());
+                                    stopListening();
                                     hours = minutes = seconds = 0;
                                 }
 
@@ -203,7 +204,8 @@ public class StrawPollController implements FXMLController {
                                 timeField.setText(format.format(hours)
                                         + ":" + format.format(minutes)
                                         + ":" + format.format(seconds));
-                            }
+                            });
+                        }
                     }, 0, 1000);
 
             startStopButton.setText("Stop");
@@ -331,12 +333,12 @@ public class StrawPollController implements FXMLController {
         private String id;
         private String name;
 
-        public ComboBoxEntry(String id, String name) {
+        ComboBoxEntry(String id, String name) {
             this.id = id;
             this.name = name;
         } // constructor
 
-        public String getId() {
+        String getId() {
             return id;
         } // method getId
 
