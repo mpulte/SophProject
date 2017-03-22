@@ -1,6 +1,6 @@
 package com.discordbot.command;
 
-import com.discordbot.poll.StrawPoll;
+import com.discordbot.model.StrawPoll;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;

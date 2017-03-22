@@ -1,75 +1,58 @@
 package com.discordbot;
 
 import com.discordbot.command.*;
-import com.discordbot.gui.CommandPane;
-import com.discordbot.gui.ControlPane;
+import com.discordbot.gui.StageHandler;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TitledPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DiscordBotApp extends Application {
 
-    private final Insets PADDING = new Insets(10, 10, 10, 10);
-    private final int WIDTH = 400;
-    private final int HEIGHT = 300;
+    private static StageHandler stageHandler = new StageHandler();
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        // setup stage
-        primaryStage.setTitle("DiscordBot");
-        primaryStage.setOnCloseRequest(event -> {
-            Platform.exit();
-        });
-
+    public void start(Stage primaryStage) {
         // setup DiscordBot
         DiscordBot.getInstance().addEventListener(new MessageListener());
         loadCommands();
 
-        // setup layout
-        VBox layout = new VBox();
-        layout.setPadding(PADDING);
-        layout.getChildren().add(buildControlPane());
-        layout.getChildren().add(buildCommandPane());
+        // set up scene
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            Parent root = FXMLLoader.load(getClass().getResource("gui/MainPane.fxml"));
+            Scene scene = new Scene(root);
+            primaryStage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
-        layout.setMaxHeight(VBox.USE_PREF_SIZE);
-
-        // setup scene
-        Scene scene = new Scene(layout, WIDTH, HEIGHT);
-        primaryStage.setScene(scene);
-        primaryStage.setMinWidth(WIDTH + PADDING.getLeft() + PADDING.getRight());
+        // set up stage
+        primaryStage.setTitle("DiscordBot");
+        primaryStage.setOnCloseRequest(event -> {
+            stageHandler.closeStages();
+            DiscordBot.getInstance().shutdown();
+        });
+        primaryStage.setResizable(false);
         primaryStage.show();
+
+        // set size of stage
+        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+        primaryStage.setHeight(Math.min(primaryStage.getHeight(), primaryScreenBounds.getHeight()));
+        primaryStage.setWidth(Math.min(primaryStage.getWidth(), primaryScreenBounds.getWidth()));
     } // method start
-
-    private Region buildControlPane() {
-        ControlPane controlPane = new ControlPane();
-        controlPane.setPadding(new Insets(0, 0, PADDING.getBottom(), 0));
-        return controlPane;
-    } // method buildControlPane
-
-    private Region buildCommandPane() {
-        CommandPane commandPane = new CommandPane(DiscordBot.getInstance().getCommandHandler());
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setStyle("-fx-background-color:transparent");
-        scrollPane.setFitToWidth(true);
-        scrollPane.setContent(commandPane);
-        scrollPane.prefWidthProperty().bind(commandPane.prefWidthProperty());
-
-        TitledPane titledPane = new TitledPane("Commands", scrollPane);
-        titledPane.setCollapsible(false);
-        return titledPane;
-    } // method buildCommandPane
 
     private void loadCommands() {
         List<CommandSetting> defaults = new ArrayList<>();
@@ -77,7 +60,6 @@ public class DiscordBotApp extends Application {
         defaults.add(new CommandSetting(KickCommand.class, "kick", false));
         defaults.add(new CommandSetting(RollCommand.class, "roll", false));
         defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
-
 
         CommandDB database = new CommandDB();
         for (CommandSetting defaultSetting : defaults) {
@@ -96,10 +78,14 @@ public class DiscordBotApp extends Application {
         }
     } // method loadCommands
 
-    @Override
-    public void stop() {
-        DiscordBot.getInstance().shutdown();
-    } // method stop
+    public void handleStrawPollAction(ActionEvent actionEvent) {
+        try {
+            URL location = getClass().getResource("gui/StrawPollPane.fxml");
+            stageHandler.openStage("StrawPoll", location, "Straw Poll", false, -1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    } // method handleStrawPollAction
 
     public static void main(String[] args) {
         launch(args);
