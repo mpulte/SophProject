@@ -1,4 +1,4 @@
-package com.discordbot.poll;
+package com.discordbot.model;
 
 import java.util.HashMap;
 import java.util.Map;
