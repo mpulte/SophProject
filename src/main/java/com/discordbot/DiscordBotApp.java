@@ -60,6 +60,7 @@ public class DiscordBotApp extends Application {
         defaults.add(new CommandSetting(KickCommand.class, "kick", false));
         defaults.add(new CommandSetting(RollCommand.class, "roll", false));
         defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
+        defaults.add(new CommandSetting(WikipediaCommand.class, "wiki", false));
 
         CommandDB database = new CommandDB();
         for (CommandSetting defaultSetting : defaults) {
