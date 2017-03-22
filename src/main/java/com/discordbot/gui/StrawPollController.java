@@ -4,7 +4,7 @@ import com.discordbot.DiscordBot;
 import com.discordbot.command.CommandHandler;
 import com.discordbot.command.CommandReceivedEvent;
 import com.discordbot.command.StrawPollCommand;
-import com.discordbot.poll.StrawPoll;
+import com.discordbot.model.StrawPoll;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -16,6 +16,9 @@ import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.GridPane;
 import net.dv8tion.jda.core.entities.Channel;
 import net.dv8tion.jda.core.entities.Guild;
+import net.dv8tion.jda.core.events.ReadyEvent;
+import net.dv8tion.jda.core.events.ResumedEvent;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -45,6 +48,7 @@ public class StrawPollController implements FXMLController {
     private List<Button> removeButtons = new ArrayList<>();
 
     private ResizeListener resizeListener = null;
+    private StatusListener statusListener = null;
     private StrawPoll poll = null;
 
     @FXML
@@ -267,30 +271,53 @@ public class StrawPollController implements FXMLController {
         }
     } // method setEditable
 
+    private void updateGuildComboBox() {
+        ComboBoxEntry oldEntry = guildComboBox.getValue();
+
+        if (DiscordBot.getInstance().isRunning()) {
+            for (Guild guild : DiscordBot.getInstance().getJDA().getGuilds()) {
+                ComboBoxEntry entry = new ComboBoxEntry(guild.getId(), guild.getName());
+                guildComboBox.getItems().add(entry);
+                if (oldEntry != null && guild.getId().equals(oldEntry.getId())) {
+                    guildComboBox.setValue(entry);
+                }
+            }
+        }
+    } // method updateGuildComboBox
+
+    private void updateChannelComboBox() {
+        ComboBoxEntry oldEntry = channelComboBox.getValue();
+
+        channelComboBox.setItems(FXCollections.observableArrayList());
+        if (DiscordBot.getInstance().isRunning() && guildComboBox.getValue() != null) {
+            Guild guild = DiscordBot.getInstance().getJDA().getGuildById(guildComboBox.getValue().getId());
+            for (Channel channel : guild.getTextChannels()) {
+                ComboBoxEntry entry = new ComboBoxEntry(channel.getId(), channel.getName());
+                channelComboBox.getItems().add(entry);
+                if (oldEntry != null && channel.getId().equals(oldEntry.getId())) {
+                    channelComboBox.setValue(entry);
+                }
+            }
+        }
+    } // method updateChannelComboBox
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // add two options (the minimum);
         addOption();
         addOption();
 
-        if (DiscordBot.getInstance().isRunning()) {
-            for (Guild guild : DiscordBot.getInstance().getJDA().getGuilds()) {
-                guildComboBox.getItems().add(new ComboBoxEntry(guild.getId(), guild.getName()));
-            }
-            guildComboBox.setOnAction(e -> {
-                if (DiscordBot.getInstance().isRunning()) {
-                    channelComboBox.setItems(FXCollections.observableArrayList());
-                    Guild guild = DiscordBot.getInstance().getJDA().getGuildById(guildComboBox.getValue().getId());
-                    for (Channel channel : guild.getTextChannels()) {
-                        channelComboBox.getItems().add(new ComboBoxEntry(channel.getId(), channel.getName()));
-                    }
-                }
-            });
-        }
+        updateGuildComboBox();
+        updateChannelComboBox();
+        guildComboBox.setOnAction(e -> updateChannelComboBox());
+
+        statusListener = new StatusListener();
+        DiscordBot.getInstance().addEventListener(statusListener);
     } // method initialize
 
     @Override
     public void stop() {
+        DiscordBot.getInstance().removeEventListener(statusListener);
         stopListening();
     } // method stop
 
@@ -318,5 +345,26 @@ public class StrawPollController implements FXMLController {
             return name;
         }
     } // class ComboBoxEntry
+
+    private class StatusListener extends ListenerAdapter {
+
+        @Override
+        public void onReady(ReadyEvent event) {
+            callUpdates();
+        } // method onReady
+
+        @Override
+        public void onResume(ResumedEvent event) {
+            callUpdates();
+        } // method onResume
+
+        private void callUpdates() {
+            Platform.runLater(() -> {
+                updateGuildComboBox();
+                updateChannelComboBox();
+            });
+        } // method callUpdates
+
+    } // class StatusListener
 
 } // class StrawPollController

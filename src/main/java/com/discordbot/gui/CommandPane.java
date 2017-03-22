@@ -1,9 +1,9 @@
 package com.discordbot.gui;
 
+import com.discordbot.DiscordBot;
 import com.discordbot.command.CommandHandler;
 import com.discordbot.command.CommandSetting;
 import com.discordbot.sql.CommandDB;
-import javafx.geometry.Insets;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -15,13 +15,15 @@ import java.util.List;
 
 public class CommandPane extends GridPane {
 
-    private final static Insets PADDING = new Insets(5, 5, 5, 5);
-
     private final static double H_GAP = 20d;
     private final static double V_GAP = 5d;
 
     private CommandHandler commandHandler;
     private CommandDB commandDB;
+
+    public CommandPane() {
+        this(DiscordBot.getInstance().getCommandHandler());
+    } // constructor
 
     public CommandPane(CommandHandler commandHandler) {
         this.commandHandler = commandHandler;
@@ -31,7 +33,6 @@ public class CommandPane extends GridPane {
         setStyle("-fx-background-color:transparent");
         setHgap(H_GAP);
         setVgap(V_GAP);
-        setPadding(PADDING);
 
         // set column widths
         ColumnConstraints column1 = new ColumnConstraints();
