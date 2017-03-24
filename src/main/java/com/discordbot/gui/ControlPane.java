@@ -2,6 +2,7 @@ package com.discordbot.gui;
 
 import com.discordbot.DiscordBot;
 import com.discordbot.util.SettingsManager;
+import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -75,22 +76,24 @@ public class ControlPane extends HBox {
 
         @Override
         public void onReady(ReadyEvent event) {
-            statusPane.setStyle("-fx-background-color: #00ff00");
+            Platform.runLater(() -> statusPane.setStyle("-fx-background-color: #00ff00"));
         } // method onReady
 
         @Override
         public void onResume(ResumedEvent event) {
-            statusPane.setStyle("-fx-background-color: #00ff00");
+            Platform.runLater(() -> statusPane.setStyle("-fx-background-color: #00ff00"));
         } // method onResume
         @Override
         public void onDisconnect(DisconnectEvent event) {
-            statusPane.setStyle("-fx-background-color: #ffff00");
+            Platform.runLater(() -> statusPane.setStyle("-fx-background-color: #ffff00"));
         } // method onDisconnect
 
         @Override
         public void onShutdown(ShutdownEvent event) {
-            statusPane.setStyle("-fx-background-color: #ff0000");
-            startStopButton.setText("Start");
+            Platform.runLater(() -> {
+                statusPane.setStyle("-fx-background-color: #ff0000");
+                startStopButton.setText("Start");
+            });
         } // method onShutdown
 
     } // class StatusListener
