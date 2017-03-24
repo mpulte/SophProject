@@ -26,7 +26,13 @@ public class WikipediaCommand extends CommandListener {
         User author = event.getMessageReceivedEvent().getAuthor();
 
         if (event.getArgs().isEmpty()) {
-            channel.sendMessage("Silly " + author.getName() + ", you didn't give me a topic!");
+            channel.sendMessage(
+                    new MessageBuilder()
+                            .append("Silly ")
+                            .append(author)
+                            .append(", you didn't give me a topic!")
+                            .build())
+                    .queue();
             return;
         }
 

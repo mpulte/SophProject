@@ -34,7 +34,7 @@ public class ProfanityFilterListener extends ListenerAdapter {
                 event.getChannel().sendMessage(
                         new MessageBuilder()
                                 .append("Message from ")
-                                .append(author.getAsMention())
+                                .append(author)
                                 .append(" deleted because it was naughty")
                                 .build())
                         .queue();
