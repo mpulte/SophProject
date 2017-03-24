@@ -161,7 +161,13 @@ public class TokenController implements FXMLController {
     private List<Token> getTokens() {
         List<Token> tokens = new ArrayList<>();
         for (int i = 0; i < tokenFields.size(); ++i) {
-            tokens.add(new Token(tokenFields.get(i).getText(), nameFields.get(i).getText()));
+            String token = tokenFields.get(i).getText();
+            String name = nameFields.get(i).getText();
+
+            // don't add rows with empty tokens
+            if (!token.isEmpty()) {
+                tokens.add(new Token(token, name));
+            }
         }
         return tokens;
     }
