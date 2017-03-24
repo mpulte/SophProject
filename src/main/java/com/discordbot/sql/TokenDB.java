@@ -115,7 +115,7 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
 
         int result = 0;
         for (Token token : tokens) {
-            query(query, token.getToken(), token.getName());
+            result += query(query, token.getToken(), token.getName());
         }
         return result;
     } // method insert
@@ -126,7 +126,7 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
 
         int result = 0;
         for (Token token : tokens) {
-            query(query, token.getName(), token.getToken());
+            result += query(query, token.getName(), token.getToken());
         }
         return result;
     } // method update

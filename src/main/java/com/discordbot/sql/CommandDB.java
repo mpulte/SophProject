@@ -71,7 +71,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
                 setting = new CommandSetting(
                         resultSet.getString(COMMAND_CLASS),
                         resultSet.getString(COMMAND_TAG),
-                        resultSet.getInt(COMMAND_IS_ENABLED) == TRUE);
+                        Boolean.parseBoolean(resultSet.getString(COMMAND_IS_ENABLED)));
             }
             return setting;
         } catch (SQLException | ClassNotFoundException e) {
@@ -105,7 +105,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
                     settings.add(new CommandSetting(
                             resultSet.getString(COMMAND_CLASS),
                             resultSet.getString(COMMAND_TAG),
-                            resultSet.getInt(COMMAND_IS_ENABLED) == TRUE));
+                            Boolean.parseBoolean(resultSet.getString(COMMAND_IS_ENABLED))));
                 } catch (ClassNotFoundException e) {
                     LOG.log(e);
                 }
@@ -129,10 +129,10 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
 
         int result = 0;
         for (CommandSetting setting : settings) {
-            query(query,
+            result += query(query,
                     setting.getCls().getName(),
                     setting.getTag(),
-                    setting.isEnabled() ? TRUE_STRING : FALSE_STRING);
+                    Boolean.toString(setting.isEnabled()));
         }
         return result;
     } // method insert
@@ -146,9 +146,9 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
 
         int result = 0;
         for (CommandSetting setting : settings) {
-            query(query,
+            result += query(query,
                     setting.getTag(),
-                    setting.isEnabled() ? TRUE_STRING : FALSE_STRING,
+                    Boolean.toString(setting.isEnabled()),
                     setting.getCls().getName());
         }
         return result;

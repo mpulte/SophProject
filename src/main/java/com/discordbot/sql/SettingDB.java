@@ -116,7 +116,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
 
         int result = 0;
         for (Setting setting : settings) {
-            query(query, setting.getKey(), setting.getValue());
+            result += query(query, setting.getKey(), setting.getValue());
         }
         return result;
     } // method insert
@@ -127,7 +127,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
 
         int result = 0;
         for (Setting setting : settings) {
-            query(query, setting.getValue(), setting.getKey());
+            result += query(query, setting.getValue(), setting.getKey());
         }
         return result;
     } // method update

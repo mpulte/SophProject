@@ -12,11 +12,6 @@ public abstract class SQLiteDatabase<Relation, Key> {
 
     protected static final SimpleLog LOG = SimpleLog.getLog("SQLite");
 
-    protected static final int TRUE = 1;
-    protected static final int FALSE = 0;
-    protected static final String TRUE_STRING = Integer.toString(TRUE);
-    protected static final String FALSE_STRING = Integer.toString(FALSE);
-
     // table constants
     private static final String INFO = "info";
     private static final String INFO_KEY = "info_key";
