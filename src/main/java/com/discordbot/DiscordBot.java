@@ -6,12 +6,16 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.EventListener;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 import javax.security.auth.login.LoginException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DiscordBot {
+
+	private static final SimpleLog LOG = SimpleLog.getLog("DiscordBot");
+
 	private static DiscordBot instance;
 
 	private JDA jda;
@@ -25,14 +29,14 @@ public class DiscordBot {
 	    canRestart = true;
 	    commandHandler = new CommandHandler();
 	    addEventListener(commandHandler);
-	} // constructor
+	}
 	
 	public static synchronized DiscordBot getInstance() {
 		if (instance == null) {
 			instance = new DiscordBot();
 		}
 		return instance;
-	} // method DiscordBot
+	}
 
 	public JDA getJDA() {
 		return jda;
@@ -42,7 +46,7 @@ public class DiscordBot {
 	    return jda != null
                 && jda.getStatus() != JDA.Status.SHUTDOWN
                 && jda.getStatus() != JDA.Status.SHUTTING_DOWN;
-    } // method isRunning
+    }
 	
 	public synchronized DiscordBot start(String token) {
 	    // if we shutdown and freed api, we can't restart it
@@ -56,22 +60,22 @@ public class DiscordBot {
 				jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
 				jda.setAutoReconnect(true);
 			} catch (LoginException e) {
-				System.err.println("Error: JDA login failed");
+				LOG.warn("JDA login failed");
 			} catch (IllegalArgumentException | InterruptedException | RateLimitedException e) {
-				e.printStackTrace();
-			}
+                LOG.log(e);
+            }
 		} else {
-			System.out.println("JDA already running");
+			LOG.warn("JDA already running");
 		}
 		return this;
-	} // method start
+	}
 
 	public synchronized DiscordBot pause() {
 		if (isRunning()) {
 			jda.shutdown(false);
 		}
 		return this;
-	} // method pause
+	}
 
 	public synchronized DiscordBot shutdown() {
 		if (jda != null && canRestart) {
@@ -79,7 +83,7 @@ public class DiscordBot {
             canRestart = false;
 		}
 		return this;
-	} // method shutdown
+	}
 
 	public synchronized DiscordBot reboot(String token) {
 		if (jda != null) {
@@ -87,7 +91,7 @@ public class DiscordBot {
 		}
 		start(token);
 		return this;
-	} // method reboot
+	}
 
     public DiscordBot addEventListener(EventListener...listeners) {
         for (EventListener listener : listeners) {
@@ -103,7 +107,7 @@ public class DiscordBot {
             this.listeners.put(listener.getClass(), listener);
         }
         return this;
-    } // method addEventListener
+    }
 
     public DiscordBot removeEventListener(EventListener...listeners) {
         for (EventListener listener : listeners) {
@@ -113,10 +117,10 @@ public class DiscordBot {
             this.listeners.put(listener.getClass(), listener);
         }
         return this;
-    } // method addEventListener
+    }
 
     public CommandHandler getCommandHandler() {
         return commandHandler;
     } // method getCommandHandler
 
-} // class DiscordBot
+}
