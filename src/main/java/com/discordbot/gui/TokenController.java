@@ -1,8 +1,7 @@
 package com.discordbot.gui;
 
-import com.discordbot.model.Setting;
+import com.discordbot.DiscordBot;
 import com.discordbot.model.Token;
-import com.discordbot.sql.SettingDB;
 import com.discordbot.sql.TokenDB;
 import com.discordbot.util.SettingsManager;
 import javafx.fxml.FXML;
@@ -12,6 +11,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class TokenController implements FXMLController {
+
+    private static SimpleLog LOG = SimpleLog.getLog("TokenController");
 
     public static final String TOKEN_SETTING = "token";
 
@@ -104,6 +106,11 @@ public class TokenController implements FXMLController {
         List<Node> toRemove = new ArrayList<>();
         List<Node> toMove = new ArrayList<>();
 
+        // don't remove if it's the last one
+        if (GridPane.getRowIndex(addButton) <= 1) {
+            return;
+        }
+
         // determine which nodes to remove or move
         for (Node node : gridPane.getChildren()) {
             int rowIndex = GridPane.getRowIndex(node);
@@ -184,6 +191,11 @@ public class TokenController implements FXMLController {
 
         // load tokens
         database.selectAll().forEach(token -> addToken(token, token.getToken().equals(savedToken)));
+
+        // if there are no saved tokens, create a first row
+        if (tokenFields.isEmpty()) {
+            addToken(new Token("", ""), false);
+        }
     }
 
     private void saveTokens() {
@@ -204,15 +216,20 @@ public class TokenController implements FXMLController {
             }
         });
 
-        // save selected token setting
-        SettingDB settingDB = new SettingDB();
+        // reboot bot with new token
         String token = (selectedRow != -1 && tokenFields.size() > selectedRow)
                 ? tokenFields.get(selectedRow).getText() : "";
-        if (settingDB.exists(TOKEN_SETTING)) {
-            settingDB.update(new Setting(TOKEN_SETTING, token));
-        } else {
-            settingDB.insert(new Setting(TOKEN_SETTING, token));
+        try {
+            if (!token.isEmpty() && DiscordBot.getInstance().isRunning()
+                    && !token.equals(SettingsManager.getString(TOKEN_SETTING))) {
+                DiscordBot.getInstance().reboot(token);
+            }
+        } catch (InvalidKeyException e) {
+            LOG.warn(e.getMessage());
         }
+
+        // save selected token setting
+        SettingsManager.setString(TOKEN_SETTING, token);
     }
 
     @Override
