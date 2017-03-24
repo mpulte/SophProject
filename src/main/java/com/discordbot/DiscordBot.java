@@ -38,13 +38,13 @@ public class DiscordBot {
 		return jda;
 	} // method getInstance
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
 	    return jda != null
                 && jda.getStatus() != JDA.Status.SHUTDOWN
                 && jda.getStatus() != JDA.Status.SHUTTING_DOWN;
     } // method isRunning
 	
-	public DiscordBot start(String token) {
+	public synchronized DiscordBot start(String token) {
 	    // if we shutdown and freed api, we can't restart it
 	    if (!canRestart) {
 	        throw new IllegalStateException("JDA completely shutdown, can't restart");
@@ -66,14 +66,14 @@ public class DiscordBot {
 		return this;
 	} // method start
 
-	public DiscordBot pause() {
+	public synchronized DiscordBot pause() {
 		if (isRunning()) {
 			jda.shutdown(false);
 		}
 		return this;
 	} // method pause
-	
-	public DiscordBot shutdown() {
+
+	public synchronized DiscordBot shutdown() {
 		if (jda != null && canRestart) {
 			jda.shutdown();
             canRestart = false;
@@ -81,7 +81,7 @@ public class DiscordBot {
 		return this;
 	} // method shutdown
 
-	public DiscordBot reboot(String token) {
+	public synchronized DiscordBot reboot(String token) {
 		if (jda != null) {
 			jda.shutdown(false);
 		}

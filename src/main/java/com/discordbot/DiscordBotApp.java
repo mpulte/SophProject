@@ -4,6 +4,8 @@ import com.discordbot.command.*;
 import com.discordbot.gui.StageHandler;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
+import com.discordbot.util.ProfanityFilter;
+import com.discordbot.util.ProfanityFilterListener;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -27,7 +29,7 @@ public class DiscordBotApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         // setup DiscordBot
-        DiscordBot.getInstance().addEventListener(new MessageListener());
+        loadListeners();
         loadCommands();
         Platform.setImplicitExit(true);
 
@@ -54,6 +56,12 @@ public class DiscordBotApp extends Application {
         Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
         primaryStage.setHeight(Math.min(primaryStage.getHeight(), primaryScreenBounds.getHeight()));
         primaryStage.setWidth(Math.min(primaryStage.getWidth(), primaryScreenBounds.getWidth()));
+    }
+
+    private void loadListeners() {
+        DiscordBot.getInstance()
+                .addEventListener(new MessageListener())
+                .addEventListener(new ProfanityFilterListener(new ProfanityFilter()));
     }
 
     private void loadCommands() {
