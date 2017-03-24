@@ -1,7 +1,7 @@
 package com.discordbot.command;
 
-
 import com.discordbot.util.Util;
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -34,16 +34,21 @@ public class WikipediaCommand extends CommandListener {
 
         try {
             // get pages with extracts for the topic
-            String extract = queryExtracts(topic);
-            if (extract == null) {
+            String query = queryExtracts(topic);
+            if (query == null) {
                 // there is no page for the topic
-                channel.sendMessage("Sorry " + author.getName()
-                        + ", Wikipedia doesn't know what you're talking about").queue();
-            } else if (extract.endsWith(" refer to:") || extract.endsWith(" refers to:")) {
-                channel.sendMessage(extract + "\n" + queryLinks(topic)).queue();
-            } else {
-                // max message length is 2000 characters, so we may have to split up the extract
-                for (String paragraph : extract.split("\n")) {
+                channel.sendMessage(
+                        new MessageBuilder()
+                                .append("Sorry ")
+                                .append(author.getAsMention())
+                                .append(", Wikipedia doesn't know what you're talking about")
+                                .build())
+                        .queue();
+            } else if (query.endsWith(" refer to:") || query.endsWith(" refers to:")) {
+                channel.sendMessage(query + "\n" + queryLinks(topic)).queue();
+            } else if (query.length() >= 2000) {
+                // max message length is 2000 characters, so we may have to split up the query
+                for (String paragraph : query.split("\n")) {
                     while (paragraph.length() >= 2000) {
                         int cut = paragraph.lastIndexOf(" ", 2000);
                         channel.sendMessage(paragraph.substring(0, cut));
@@ -51,6 +56,8 @@ public class WikipediaCommand extends CommandListener {
                     }
                     channel.sendMessage(paragraph).queue();
                 }
+            } else {
+                channel.sendMessage(query).queue();
             }
         } catch (IOException e) {
             LOG.log(e);
@@ -69,15 +76,15 @@ public class WikipediaCommand extends CommandListener {
         String url = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=links&titles=" + topic;
         JSONObject pages = Util.readJsonFromUrl(url).getJSONObject("query").getJSONObject("pages");
         JSONArray links = pages.getJSONObject(pages.keys().next()).getJSONArray("links");
-        String message = "";
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < links.length() - 1; i++) {
             try {
-                message += links.getJSONObject(i).getString("title") + "\n";
+                builder.append(links.getJSONObject(i).getString("title")).append('\n');
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        return message.isEmpty() ? message : message.substring(0, message.length() - 1);
+        return builder.length() == 0 ? "" : builder.substring(0, builder.length() - 1);
     } // method queryLinks
 
     @Override
