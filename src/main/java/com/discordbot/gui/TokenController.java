@@ -190,7 +190,20 @@ public class TokenController implements FXMLController {
         final String savedToken = setting;
 
         // load tokens
-        database.selectAll().forEach(token -> addToken(token, token.getToken().equals(savedToken)));
+        List<Token> tokens = database.selectAll();
+        for (int i = 0; i < tokens.size(); ++i) {
+            if (i < tokenFields.size()) {
+                tokenFields.get(i).setText(tokens.get(i).getToken());
+                nameFields.get(i).setText(tokens.get(i).getName());
+            } else {
+                addToken(tokens.get(i), tokens.get(i).getToken().equals(savedToken));
+            }
+        }
+
+        // remove any extra rows
+        while (tokenFields.size() > tokens.size()) {
+            removeToken(tokens.size());
+        }
 
         // if there are no saved tokens, create a first row
         if (tokenFields.isEmpty()) {
@@ -239,7 +252,6 @@ public class TokenController implements FXMLController {
 
     @Override
     public void stop() {
-        saveTokens();
     }
 
     @Override
