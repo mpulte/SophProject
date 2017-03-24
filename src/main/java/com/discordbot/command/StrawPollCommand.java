@@ -18,13 +18,14 @@ public class StrawPollCommand extends CommandListener {
 
     @Override
     public void onCommandReceived(CommandReceivedEvent event) {
-        // if it is a text channel, it must be the one specified in the constructor
         MessageReceivedEvent source = event.getMessageReceivedEvent();
+        User author = event.getMessageReceivedEvent().getAuthor();
+
+        // if it is a text channel, it must be the one specified in the constructor
         if (source.getChannelType() == ChannelType.TEXT && !source.getChannel().getId().equals(channelId)) {
             return;
         }
 
-        User author = event.getMessageReceivedEvent().getAuthor();
         try {
             if (!event.getArgs().isEmpty()) {
                 poll.putResponse(author.getId(), Integer.parseInt(event.getArgs().get(0)));
@@ -32,11 +33,31 @@ public class StrawPollCommand extends CommandListener {
                 source.getChannel().sendMessage(poll.toString()).queue();
             }
         } catch (NumberFormatException e) {
-            event.getMessageReceivedEvent().getAuthor().getPrivateChannel()
-                    .sendMessage("Poll error: your response must be the number of the option").queue();
+            // if we don't have a private channel open, we will have to open a new one
+            if (author.hasPrivateChannel()) {
+                author.getPrivateChannel()
+                        .sendMessage("Poll error: your response must be the number of the option").queue();
+            } else {
+                // best to do on new thread since we have to wait for private channel to be opened
+                new Thread(() -> {
+                    author.openPrivateChannel().complete();
+                    author.getPrivateChannel()
+                            .sendMessage("Poll error: your response must be the number of the option").queue();
+                }).run();
+            }
         } catch (IndexOutOfBoundsException e) {
-            event.getMessageReceivedEvent().getAuthor().getPrivateChannel()
-                    .sendMessage("Poll error: your choice was not a valid option").queue();
+            // if we don't have a private channel open, we will have to open a new one
+            if (author.hasPrivateChannel()) {
+                author.getPrivateChannel()
+                        .sendMessage("Poll error: your choice was not a valid option").queue();
+            } else {
+                // best to do on new thread since we have to wait for private channel to be opened
+                new Thread(() -> {
+                    author.openPrivateChannel().complete();
+                    author.getPrivateChannel()
+                            .sendMessage("Poll error: your choice was not a valid option").queue();
+                }).run();
+            }
         }
     } // method onCommandReceivedEvent
 
