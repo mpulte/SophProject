@@ -4,7 +4,7 @@ import com.discordbot.model.Setting;
 import com.discordbot.model.Token;
 import com.discordbot.sql.SettingDB;
 import com.discordbot.sql.TokenDB;
-import javafx.event.ActionEvent;
+import com.discordbot.util.SettingsManager;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -14,6 +14,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
 
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,12 +39,12 @@ public class TokenController implements FXMLController {
     private int selectedRow = -1;
 
     @FXML
-    public void handleSaveButton(ActionEvent actionEvent) {
+    public void handleSaveButton() {
         saveTokens();
     }
 
     @FXML
-    public void handleRevertButton(ActionEvent actionEvent) {
+    public void handleRevertButton() {
         loadTokens();
     }
 
@@ -167,12 +168,16 @@ public class TokenController implements FXMLController {
 
     private void loadTokens() {
         // load selected token setting
-        SettingDB settingDB = new SettingDB();
-        Setting setting = settingDB.select("token");
-        String settingValue = setting == null ? "" : setting.getValue();
+        String setting;
+        try {
+            setting = SettingsManager.getString(TOKEN_SETTING);
+        } catch (InvalidKeyException e) {
+            setting = "";
+        }
+        final String savedToken = setting;
 
         // load tokens
-        database.selectAll().forEach(token -> addToken(token, token.getToken().equals(settingValue)));
+        database.selectAll().forEach(token -> addToken(token, token.getToken().equals(savedToken)));
     }
 
     private void saveTokens() {
