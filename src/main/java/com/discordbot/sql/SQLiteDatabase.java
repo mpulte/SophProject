@@ -96,9 +96,13 @@ public abstract class SQLiteDatabase<Relation, Key> {
     } // method selectVersion
 
     protected abstract void onCreate();
-    protected abstract void onReset();
     protected abstract void onDestroy();
     protected abstract void onUpgrade(int oldVersion, int newVersion);
+
+    protected void onReset() {
+        onDestroy();
+        onCreate();
+    } // method onReset
 
     public abstract Relation select(Key key);
     public abstract List<Relation> selectAll();

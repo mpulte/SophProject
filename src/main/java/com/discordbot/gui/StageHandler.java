@@ -2,29 +2,43 @@ package com.discordbot.gui;
 
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.Parent;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class StageHandler {
 
-    private final Map<String, List<Stage>> stages = new HashMap<>();
+    private static StageHandler instance = null;
 
-    public synchronized boolean openStage(String tag, Scene scene, String title, boolean resizeable, int maxCopies) {
+    private Map<String, List<Stage>> stages;
+
+    private StageHandler() {
+        stages = new HashMap<>();
+    }
+
+    public static synchronized StageHandler getInstance() {
+        if (instance == null) {
+            instance = new StageHandler();
+        }
+        return instance;
+    }
+
+    public synchronized StageHandler openStage(String tag, Scene scene, String title, boolean resizeable,
+                                               int maxCopies) {
         if (!stages.containsKey(tag)) {
             stages.put(tag, new LinkedList<>());
         }
         if (maxCopies == -1 || stages.get(tag).size() < maxCopies) {
-            Stage stage = new Stage();
-            stage.setTitle(title);
-            stage.setScene(scene);
-            stage.show();
-            stage.setResizable(resizeable);
+            Stage stage = openStage(tag, scene, title, resizeable);
             stage.setOnCloseRequest(event -> {
                 List<Stage> list = stages.get(tag);
                 list.remove(stage);
@@ -32,14 +46,12 @@ public class StageHandler {
                     stages.remove(tag);
                 }
             });
-            stages.get(tag).add(stage);
-            return true;
         }
-        return false;
-    } // method openStage
+        return this;
+    }
 
-    public synchronized boolean openStage(String tag, URL fxmlLocation, String title, boolean resizeable, int maxCopies)
-            throws IOException {
+    public synchronized StageHandler openStage(String tag, URL fxmlLocation, String title, boolean resizeable,
+                                               int maxCopies) throws IOException {
         if (!stages.containsKey(tag)) {
             stages.put(tag, new LinkedList<>());
         }
@@ -47,33 +59,48 @@ public class StageHandler {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(fxmlLocation);
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
-            Parent root = fxmlLoader.load(fxmlLocation.openStream());
-            Scene scene = new Scene(root);
-            Stage stage = new Stage();
-            stage.setTitle(title);
-            stage.setScene(scene);
-            stage.show();
-            stage.setResizable(resizeable);
-            stages.get(tag).add(stage);
+            Stage stage = openStage(tag, new Scene(fxmlLoader.load(fxmlLocation.openStream())), title, resizeable);
 
             if (fxmlLoader.getController() instanceof FXMLController) {
                 FXMLController controller = fxmlLoader.getController();
                 if (!resizeable) {
-                    controller.setResizeListener(stage::sizeToScene);
+                    controller.setResizeListener(() -> {
+                        stage.sizeToScene();
+                        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+                        stage.setHeight(Math.min(stage.getHeight(), screenBounds.getHeight()));
+                        stage.setWidth(Math.min(stage.getWidth(), screenBounds.getWidth()));
+                    });
                 }
                 stage.setOnCloseRequest(event -> {
                     controller.stop();
                     removeFromList(tag, stage);
-                    System.out.println("called");
                 });
             } else {
                 stage.setOnCloseRequest(event -> removeFromList(tag, stage));
             }
-
-            return true;
         }
-        return false;
-    } // method openStage
+        return this;
+    }
+
+    private synchronized Stage openStage(String tag, Scene scene, String title, boolean resizeable) {
+        Stage stage = new Stage();
+        stage.setTitle(title);
+        stage.setScene(scene);
+        stage.show();
+
+        stage.setResizable(resizeable);
+        stage.sizeToScene();
+
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        if (!resizeable) {
+            stage.setHeight(Math.min(stage.getHeight(), screenBounds.getHeight()));
+            stage.setWidth(Math.min(stage.getWidth(), screenBounds.getWidth()));
+        }
+
+        stages.get(tag).add(stage);
+
+        return stage;
+    }
 
     public synchronized void closeStages() {
         for (List<Stage> list : stages.values()) {
@@ -84,9 +111,9 @@ public class StageHandler {
             }
         }
         stages.clear();
-    } // method closeStages
+    }
 
-    public synchronized void closeStages(String tag) {
+    public synchronized StageHandler closeStages(String tag) {
         List<Stage> list = stages.get(tag);
         while (list != null && !list.isEmpty()) {
             Stage stage = list.get(0);
@@ -94,7 +121,8 @@ public class StageHandler {
             list.remove(stage);
         }
         stages.remove(tag);
-    } // method closeStages
+        return this;
+    }
 
     private void removeFromList(String tag, Stage stage) {
         List<Stage> list = stages.get(tag);
@@ -102,6 +130,6 @@ public class StageHandler {
         if (list.isEmpty()) {
             stages.remove(tag);
         }
-    } // method removeFromList
+    }
 
-} // class StageHandler
+}

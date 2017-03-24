@@ -1,7 +1,6 @@
 package com.discordbot;
 
 import com.discordbot.command.CommandHandler;
-import com.discordbot.util.Util;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -45,7 +44,7 @@ public class DiscordBot {
                 && jda.getStatus() != JDA.Status.SHUTTING_DOWN;
     } // method isRunning
 	
-	public DiscordBot start() {
+	public DiscordBot start(String token) {
 	    // if we shutdown and freed api, we can't restart it
 	    if (!canRestart) {
 	        throw new IllegalStateException("JDA completely shutdown, can't restart");
@@ -54,7 +53,7 @@ public class DiscordBot {
         // make sure bot isn't running
 		if (!isRunning()) {
 			try {
-				jda = new JDABuilder(AccountType.BOT).setToken(Util.TOKEN).addListener(listeners.values().toArray()).buildBlocking();
+				jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
 				jda.setAutoReconnect(true);
 			} catch (LoginException e) {
 				System.err.println("Error: JDA login failed");
@@ -82,11 +81,11 @@ public class DiscordBot {
 		return this;
 	} // method shutdown
 
-	public DiscordBot reboot() {
+	public DiscordBot reboot(String token) {
 		if (jda != null) {
 			jda.shutdown(false);
 		}
-		start();
+		start(token);
 		return this;
 	} // method reboot
 

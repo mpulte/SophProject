@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<ScrollPane
+        xmlns="http://javafx.com/javafx"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="com.discordbot.gui.TokenController">
+
+    <VBox>
+        <ToolBar>
+            <Region styleClass="spacer"/>
+            <HBox styleClass="segmented-button-bar">
+                <Button text="Save" onAction="#handleSaveButton"/>
+                <Button text="Revert" onAction="#handleRevertButton"/>
+            </HBox>
+        </ToolBar>
+
+        <GridPane
+                fx:id="gridPane"
+                alignment="center"
+                hgap="10"
+                vgap="10">
+
+            <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>
+
+            <Button
+                    fx:id="addButton"
+                    text="Add"
+                    GridPane.columnIndex = "0"
+                    GridPane.rowIndex="0"
+                    GridPane.columnSpan="4"
+                    onAction="#handleAddButton" />
+
+        </GridPane>
+    </VBox>
+</ScrollPane>

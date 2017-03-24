@@ -12,7 +12,8 @@
 
     <MenuBar>
         <Menu text="Window">
-            <MenuItem text="Straw Poll" onAction="#handleStrawPollAction"/>
+            <MenuItem text="Tokens" onAction="#handleTokensMenu"/>
+            <MenuItem text="Straw Poll" onAction="#handleStrawPollMenu"/>
         </Menu>
     </MenuBar>
 

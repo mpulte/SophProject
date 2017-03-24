@@ -40,12 +40,6 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     } // method onCreate
 
     @Override
-    protected void onReset() {
-        onDestroy();
-        onCreate();
-    } // method onReset
-
-    @Override
     protected void onDestroy() {
         query(DROP_TABLE);
     }  // method onDestroy

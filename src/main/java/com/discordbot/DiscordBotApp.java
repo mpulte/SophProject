@@ -5,13 +5,15 @@ import com.discordbot.gui.StageHandler;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,29 +22,29 @@ import java.util.List;
 
 public class DiscordBotApp extends Application {
 
-    private static StageHandler stageHandler = new StageHandler();
+    private static final SimpleLog LOG = SimpleLog.getLog("DiscordBotApp");
 
     @Override
     public void start(Stage primaryStage) {
         // setup DiscordBot
         DiscordBot.getInstance().addEventListener(new MessageListener());
         loadCommands();
+        Platform.setImplicitExit(true);
 
         // set up scene
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader();
             Parent root = FXMLLoader.load(getClass().getResource("gui/MainPane.fxml"));
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
         } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
+            LOG.log(e);
+            Platform.exit();
         }
 
         // set up stage
         primaryStage.setTitle("DiscordBot");
         primaryStage.setOnCloseRequest(event -> {
-            stageHandler.closeStages();
+            StageHandler.getInstance().closeStages();
             DiscordBot.getInstance().shutdown();
         });
         primaryStage.setResizable(false);
@@ -52,7 +54,7 @@ public class DiscordBotApp extends Application {
         Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
         primaryStage.setHeight(Math.min(primaryStage.getHeight(), primaryScreenBounds.getHeight()));
         primaryStage.setWidth(Math.min(primaryStage.getWidth(), primaryScreenBounds.getWidth()));
-    } // method start
+    }
 
     private void loadCommands() {
         List<CommandSetting> defaults = new ArrayList<>();
@@ -77,19 +79,34 @@ public class DiscordBotApp extends Application {
                 }
             }
         }
-    } // method loadCommands
+    }
 
-    public void handleStrawPollAction(ActionEvent actionEvent) {
+    @Override
+    public void stop() {
+        DiscordBot.getInstance().shutdown();
+    }
+
+    @FXML
+    public void handleTokensMenu() {
+        try {
+            URL location = getClass().getResource("gui/TokenPane.fxml");
+            StageHandler.getInstance().openStage("Tokens", location, "Tokens", false, 1);
+        } catch (IOException e) {
+            LOG.log(e);
+        }
+    }
+
+    @FXML
+    public void handleStrawPollMenu() {
         try {
             URL location = getClass().getResource("gui/StrawPollPane.fxml");
-            stageHandler.openStage("StrawPoll", location, "Straw Poll", false, -1);
+            StageHandler.getInstance().openStage("StrawPoll", location, "Straw Poll", false, -1);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.log(e);
         }
-    } // method handleStrawPollAction
+    }
 
     public static void main(String[] args) {
         launch(args);
     } // method main
-
-} // class DiscordBotApp
+}

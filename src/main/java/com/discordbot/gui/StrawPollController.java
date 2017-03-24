@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 public class StrawPollController implements FXMLController {
 
     @FXML
+    public GridPane gridPane;
+    @FXML
     private Button startStopButton;
     @FXML
     private Button addOptionButton;
@@ -87,7 +89,6 @@ public class StrawPollController implements FXMLController {
         removeButtons.add(button);
 
         // add text field and button to grid pane and array lists
-        GridPane gridPane = (GridPane) addOptionButton.getParent();
         gridPane.add(textField, 1, row, 2, 1);
         gridPane.add(button, 3, row);
         gridPane.getChildren().remove(addOptionButton);
@@ -104,7 +105,6 @@ public class StrawPollController implements FXMLController {
             return;
         }
 
-        GridPane gridPane = (GridPane) addOptionButton.getParent();
         List<Node> toRemove = new ArrayList<>();
         List<Node> toMove = new ArrayList<>();
 
@@ -140,14 +140,9 @@ public class StrawPollController implements FXMLController {
 
             gridPane.getChildren().remove(node);
             if (node == addOptionButton) {
-                gridPane.getChildren().remove(node);
                 gridPane.add(node, colIndex, rowIndex - 1, 3, 1);
-            } else if (node instanceof TextField) {
-                gridPane.getChildren().remove(node);
+            } else {
                 gridPane.add(node, colIndex, rowIndex - 1, 2, 1);
-            } else if (node instanceof Button){
-                gridPane.getChildren().remove(node);
-                gridPane.add(node, colIndex, rowIndex - 1);
             }
         }
 
