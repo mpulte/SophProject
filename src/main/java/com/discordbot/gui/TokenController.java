@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 
 public class TokenController implements FXMLController {
 
-    private static final String TOKEN_SETTING = "token";
+    public static final String TOKEN_SETTING = "token";
 
     @FXML
     public GridPane gridPane;

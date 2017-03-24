@@ -1,8 +1,7 @@
 package com.discordbot.gui;
 
 import com.discordbot.DiscordBot;
-import com.discordbot.model.Setting;
-import com.discordbot.sql.SettingDB;
+import com.discordbot.util.SettingsManager;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -16,6 +15,7 @@ import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.InvalidKeyException;
 
 public class ControlPane extends HBox {
 
@@ -40,18 +40,22 @@ public class ControlPane extends HBox {
         startStopButton.setOnAction(actionEvent -> {
             DiscordBot bot = DiscordBot.getInstance();
             if (!bot.isRunning()) {
-                Setting tokenSetting = (new SettingDB()).select("token");
-                if (tokenSetting != null && !tokenSetting.getValue().equals("")) {
-                    bot.start(tokenSetting.getValue());
+                try {
+                    String token = SettingsManager.getString(TokenController.TOKEN_SETTING);
+                    if (token.equals("")) {
+                        throw new InvalidKeyException("Token not set");
+                    }
+                    bot.start(token);
                     if (bot.isRunning()) {
                         startStopButton.setText("Stop");
                     }
-                } else {
+                } catch (InvalidKeyException e1) {
+                    LOG.warn(e1.getMessage());
                     try {
                         URL location = getClass().getResource("../gui/TokenPane.fxml");
                         StageHandler.getInstance().openStage("Tokens", location, "Tokens", false, 1);
-                    } catch (IOException e) {
-                        LOG.log(e);
+                    } catch (IOException e2) {
+                        LOG.log(e2);
                     }
                 }
             } else {
