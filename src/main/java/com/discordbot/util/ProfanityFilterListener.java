@@ -39,20 +39,26 @@ public class ProfanityFilterListener extends ListenerAdapter {
                                 .build())
                         .queue();
 
-                new Thread(() -> {
-                    MessageBuilder messageBuilder = new MessageBuilder();
-                    messageBuilder.append(words.size() > 1 ? "The words " : "The word ");
-                    words.forEach(word -> messageBuilder.append(word).append(" "));
-                    messageBuilder
-                            .append(words.size() > 1 ? "are " : "is ")
-                            .append("not allowed in channel ")
-                            .append(event.getChannel().getName())
-                            .append(" on ")
-                            .append(event.getGuild().getName());
+                MessageBuilder messageBuilder = new MessageBuilder();
+                messageBuilder.append(words.size() > 1 ? "The words " : "The word ");
+                words.forEach(word -> messageBuilder.append(word).append(" "));
+                messageBuilder
+                        .append(words.size() > 1 ? "are " : "is ")
+                        .append("not allowed in channel ")
+                        .append(event.getChannel().getName())
+                        .append(" on ")
+                        .append(event.getGuild().getName());
 
-                    author.openPrivateChannel().complete();
+                // if we don't have a private channel open, we will have to open a new one
+                if (author.hasPrivateChannel()) {
                     author.getPrivateChannel().sendMessage(messageBuilder.build()).queue();
-                }).run();
+                } else {
+                    // best to do on new thread since we have to wait for private channel to be opened
+                    new Thread(() -> {
+                        author.openPrivateChannel().complete();
+                        author.getPrivateChannel().sendMessage(messageBuilder.build()).queue();
+                    }).run();
+                }
             }
         }
     }
