@@ -122,7 +122,7 @@ public class DiscordBotApp extends Application {
         try {
             URL location = getClass().getResource("gui/ProfanityFilterPane.fxml");
             FXMLController controller = new ProfanityFilterController(filter);
-            StageHandler.getInstance().openStage("StrawPoll", location, controller, "Straw Poll", false, -1);
+            StageHandler.getInstance().openStage("ProfanityFilter", location, controller, "Profanity Filter", false, 1);
         } catch (IOException e) {
             LOG.log(e);
         }
