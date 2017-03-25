@@ -1,20 +1,17 @@
 package com.discordbot.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ProfanityFilter {
 
-    List<String> blackList = new ArrayList<>();
+    private Set<String> blackList = new LowerCaseTreeSet();
+    private ChangeListener listener;
 
     public ProfanityFilter() {
-        blackList.add("fuck");
-        blackList.add("shit");
-        blackList.add("damn");
     }
 
-    public List<String> filter(String s) {
-        List<String> badWords = new ArrayList<>();
+    public Collection<String> filter(String s) {
+        Collection<String> badWords = new ArrayList<>();
         String[] words = s.split("\\W+");
         for (String word : words) {
             for (String wordBL : blackList) {
@@ -24,6 +21,58 @@ public class ProfanityFilter {
             }
         }
         return badWords;
+    }
+
+    public ProfanityFilter add(String...words) {
+        blackList.addAll(Arrays.asList(words));
+        if (listener != null) {
+            listener.onChange(ChangeType.ADD, words);
+        }
+        return this;
+    }
+
+    public ProfanityFilter remove(String...words) {
+        blackList.removeAll(Arrays.asList(words));
+        if (listener != null) {
+            listener.onChange(ChangeType.REMOVE, words);
+        }
+        return this;
+    }
+
+    public List<String> asList() {
+        return new ArrayList<>(blackList);
+    }
+
+    public ProfanityFilter setChangeListener(ChangeListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    public interface ChangeListener {
+        void onChange(ChangeType type, String...words);
+    }
+
+    public enum ChangeType { ADD, REMOVE }
+
+    private class LowerCaseTreeSet extends TreeSet<String> {
+
+        LowerCaseTreeSet() {
+            super(String.CASE_INSENSITIVE_ORDER);
+        }
+
+        @Override
+        public boolean add(String s) {
+            return super.add(s.toLowerCase());
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends String> c) {
+            boolean changed = false;
+            for (String s : c) {
+                changed = add(s) || changed;
+            }
+            return changed;
+        }
     }
 
 }

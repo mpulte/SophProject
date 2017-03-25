@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.util.List;
+import java.util.Collection;
 
 public class ProfanityFilterListener extends ListenerAdapter {
 
@@ -26,7 +26,7 @@ public class ProfanityFilterListener extends ListenerAdapter {
             Message message = event.getMessage();
             User author = event.getAuthor();
 
-            List<String> words = filter.filter(message.getContent());
+            Collection<String> words = filter.filter(message.getContent());
             if (!words.isEmpty()) {
                 System.out.println("Profanity Found");
                 message.delete().queue();

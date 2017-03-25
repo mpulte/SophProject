@@ -54,7 +54,7 @@ public class ControlPane extends HBox {
                     LOG.warn(e1.getMessage());
                     try {
                         URL location = getClass().getResource("../gui/TokenPane.fxml");
-                        StageHandler.getInstance().openStage("Tokens", location, "Tokens", false, 1);
+                        StageHandler.getInstance().openStage("Tokens", location, null, "Tokens", false, 1);
                     } catch (IOException e2) {
                         LOG.log(e2);
                     }

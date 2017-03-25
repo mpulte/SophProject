@@ -13,6 +13,7 @@
     <MenuBar>
         <Menu text="Window">
             <MenuItem text="Tokens" onAction="#handleTokensMenu"/>
+            <MenuItem text="Profanity Filter" onAction="#handleProfanityFilterMenu"/>
             <MenuItem text="Straw Poll" onAction="#handleStrawPollMenu"/>
         </Menu>
     </MenuBar>

@@ -1,6 +1,8 @@
 package com.discordbot;
 
 import com.discordbot.command.*;
+import com.discordbot.gui.FXMLController;
+import com.discordbot.gui.ProfanityFilterController;
 import com.discordbot.gui.StageHandler;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.MessageListener;
@@ -8,6 +10,7 @@ import com.discordbot.util.ProfanityFilter;
 import com.discordbot.util.ProfanityFilterListener;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -25,6 +28,8 @@ import java.util.List;
 public class DiscordBotApp extends Application {
 
     private static final SimpleLog LOG = SimpleLog.getLog("DiscordBotApp");
+
+    private ProfanityFilter filter = new ProfanityFilter();
 
     @Override
     public void start(Stage primaryStage) {
@@ -61,7 +66,7 @@ public class DiscordBotApp extends Application {
     private void loadListeners() {
         DiscordBot.getInstance()
                 .addEventListener(new MessageListener())
-                .addEventListener(new ProfanityFilterListener(new ProfanityFilter()));
+                .addEventListener(new ProfanityFilterListener(filter));
     }
 
     private void loadCommands() {
@@ -98,7 +103,18 @@ public class DiscordBotApp extends Application {
     public void handleTokensMenu() {
         try {
             URL location = getClass().getResource("gui/TokenPane.fxml");
-            StageHandler.getInstance().openStage("Tokens", location, "Tokens", false, 1);
+            StageHandler.getInstance().openStage("Tokens", location, null, "Tokens", false, 1);
+        } catch (IOException e) {
+            LOG.log(e);
+        }
+    }
+
+    @FXML
+    public void handleProfanityFilterMenu(ActionEvent actionEvent) {
+        try {
+            URL location = getClass().getResource("gui/ProfanityFilterPane.fxml");
+            FXMLController controller = new ProfanityFilterController(filter);
+            StageHandler.getInstance().openStage("StrawPoll", location, controller, "Straw Poll", false, -1);
         } catch (IOException e) {
             LOG.log(e);
         }
@@ -108,7 +124,7 @@ public class DiscordBotApp extends Application {
     public void handleStrawPollMenu() {
         try {
             URL location = getClass().getResource("gui/StrawPollPane.fxml");
-            StageHandler.getInstance().openStage("StrawPoll", location, "Straw Poll", false, -1);
+            StageHandler.getInstance().openStage("StrawPoll", location, null, "Straw Poll", false, -1);
         } catch (IOException e) {
             LOG.log(e);
         }

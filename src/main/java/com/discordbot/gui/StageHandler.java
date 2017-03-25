@@ -10,10 +10,7 @@ import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StageHandler {
 
@@ -50,8 +47,8 @@ public class StageHandler {
         return this;
     }
 
-    public synchronized StageHandler openStage(String tag, URL fxmlLocation, String title, boolean resizeable,
-                                               int maxCopies) throws IOException {
+    public synchronized StageHandler openStage(String tag, URL fxmlLocation, Object controller, String title,
+                                               boolean resizeable, int maxCopies) throws IOException {
         if (!stages.containsKey(tag)) {
             stages.put(tag, new LinkedList<>());
         }
@@ -59,12 +56,16 @@ public class StageHandler {
             FXMLLoader fxmlLoader = new FXMLLoader();
             fxmlLoader.setLocation(fxmlLocation);
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
-            Stage stage = openStage(tag, new Scene(fxmlLoader.load(fxmlLocation.openStream())), title, resizeable);
+            fxmlLoader.setController(controller);
 
-            if (fxmlLoader.getController() instanceof FXMLController) {
-                FXMLController controller = fxmlLoader.getController();
+            Stage stage = openStage(tag, new Scene(fxmlLoader.load(fxmlLocation.openStream())), title, resizeable);
+            if (controller == null) {
+                controller = fxmlLoader.getController();
+            }
+            if (controller != null && controller instanceof FXMLController) {
+                FXMLController fxmlController = fxmlLoader.getController();
                 if (!resizeable) {
-                    controller.setResizeListener(() -> {
+                    fxmlController.setResizeListener(() -> {
                         stage.sizeToScene();
                         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
                         stage.setHeight(Math.min(stage.getHeight(), screenBounds.getHeight()));
@@ -72,7 +73,7 @@ public class StageHandler {
                     });
                 }
                 stage.setOnCloseRequest(event -> {
-                    controller.stop();
+                    fxmlController.stop();
                     removeFromList(tag, stage);
                 });
             } else {
