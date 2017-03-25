@@ -36,8 +36,9 @@ public class ProfanityFilterController implements FXMLController {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        addButton.setOnAction(e -> handleAddButton());
-        removeButton.setOnAction(e -> handleRemoveButton());
+        addField.setOnAction(e -> handleAddAction());
+        addButton.setOnAction(e -> handleAddAction());
+        removeButton.setOnAction(e -> handleRemoveAction());
         updateRemoveComboBox();
     }
 
@@ -45,7 +46,7 @@ public class ProfanityFilterController implements FXMLController {
     public void stop() {
     }
 
-    public void handleAddButton() {
+    public void handleAddAction() {
         String word = addField.getText();
         if (!word.isEmpty()) {
             filter.add(word);
@@ -53,7 +54,7 @@ public class ProfanityFilterController implements FXMLController {
         }
     }
 
-    public void handleRemoveButton() {
+    public void handleRemoveAction() {
         Collection<String> words = removeComboBox.getCheckModel().getCheckedItems();
         if (!words.isEmpty()) {
             filter.remove(words.toArray(new String[words.size()]));

@@ -82,7 +82,7 @@ public class TokenController implements FXMLController {
         TextField tokenField = new TextField();
         tokenField.setPromptText("Token");
         tokenField.setText(token.getToken());
-        tokenField.setPrefWidth(400);
+        tokenField.setPrefWidth(450);
         tokenFields.add(tokenField);
 
         // set up button

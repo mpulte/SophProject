@@ -10,7 +10,7 @@ import java.security.InvalidKeyException;
 public final class FileUtil {
 
 	public static final String RESOURCE_FOLDER_SETTING = "resource_folder";
-	private static final String RESOURCE_FOLDER_DEFAULT = System.getProperty("user.home") + "/DiscordBot";
+	private static final String RESOURCE_FOLDER_DEFAULT = System.getProperty("user.home") + "\\DiscordBot";
 
 	public static Path getResourceFolder() {
 		Path path;
@@ -25,6 +25,8 @@ public final class FileUtil {
 				alert.showAndWait();
 
 				path = Paths.get(RESOURCE_FOLDER_DEFAULT);
+                //noinspection ResultOfMethodCallIgnored
+                path.toFile().mkdir();
 			}
 		} catch (InvalidKeyException e) {
 			path = Paths.get(RESOURCE_FOLDER_DEFAULT);

@@ -19,6 +19,7 @@
 
     <TextField
             fx:id="resourceFolderField"
+            prefWidth="450"
             GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
     <Button
