@@ -34,4 +34,8 @@ public final class FileUtil {
         return path;
 	}
 
-} // class FileUtil
+	public static Path getResourcePath(String...path) {
+	    return Paths.get(getResourceFolder().toString(), path);
+    }
+
+}
