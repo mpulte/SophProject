@@ -39,6 +39,7 @@ public class ProfanityFilterController implements FXMLController {
         addField.setOnAction(e -> handleAddAction());
         addButton.setOnAction(e -> handleAddAction());
         removeButton.setOnAction(e -> handleRemoveAction());
+        removeComboBox.prefWidthProperty().addListener((observable, oldValue, newValue) -> resizeListener.onResize());
         updateRemoveComboBox();
     }
 
@@ -50,6 +51,7 @@ public class ProfanityFilterController implements FXMLController {
         String word = addField.getText();
         if (!word.isEmpty()) {
             filter.add(word);
+            addField.setText("");
             updateRemoveComboBox();
         }
     }
@@ -64,7 +66,6 @@ public class ProfanityFilterController implements FXMLController {
 
     private void updateRemoveComboBox() {
         ObservableList<String> comboBoxList = removeComboBox.getItems();
-        ObservableList<String> comboBoxCheckedList = removeComboBox.getCheckModel().getCheckedItems();
         List<String> filterList = filter.asList();
 
         // determine which words to add or remove
@@ -77,10 +78,8 @@ public class ProfanityFilterController implements FXMLController {
                         .filter(w -> comboBoxList.stream().noneMatch(w::equalsIgnoreCase))
                         .collect(Collectors.toList());
 
-        // clear checks on items to remove
-        toRemove.stream()
-                .filter(w -> comboBoxCheckedList.stream().anyMatch(w::equalsIgnoreCase))
-                .forEach(removeComboBox.getCheckModel()::clearCheck);
+        // remove check from items
+        removeComboBox.getCheckModel().clearChecks();
 
         // add or remove words if necessary
         comboBoxList.addAll(toAdd);
