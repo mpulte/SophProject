@@ -28,7 +28,6 @@ public class ProfanityFilterController implements FXMLController {
     public Button removeButton;
 
     private ProfanityFilter filter;
-    private ResizeListener resizeListener = null;
 
     public ProfanityFilterController(ProfanityFilter filter) {
         this.filter = filter;
@@ -39,7 +38,6 @@ public class ProfanityFilterController implements FXMLController {
         addField.setOnAction(e -> handleAddAction());
         addButton.setOnAction(e -> handleAddAction());
         removeButton.setOnAction(e -> handleRemoveAction());
-        removeComboBox.prefWidthProperty().addListener((observable, oldValue, newValue) -> resizeListener.onResize());
         updateRemoveComboBox();
     }
 
@@ -85,16 +83,10 @@ public class ProfanityFilterController implements FXMLController {
         comboBoxList.addAll(toAdd);
         comboBoxList.removeAll(toRemove);
         comboBoxList.sort(String::compareTo);
-
-        // resize the window
-        if (resizeListener != null) {
-            resizeListener.onResize();
-        }
     }
 
     @Override
     public void setResizeListener(ResizeListener listener) {
-        this.resizeListener = listener;
     }
 
 }
