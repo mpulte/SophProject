@@ -14,15 +14,16 @@
     <padding><Insets bottom="10" left="10" right="10" top="10"/></padding>
 
     <Label
-            text="Save Folder:"
+            text="Resource Folder:"
             GridPane.columnIndex="0" GridPane.rowIndex="0"/>
 
     <TextField
-            fx:id="saveFolderField"
+            fx:id="resourceFolderField"
             GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
     <Button
-            fx:id="saveFolderButton"
+            fx:id="browseResourceFolderButton"
+            text="Browse"
             GridPane.columnIndex="2" GridPane.rowIndex="0"
             onAction="#handleSaveFolderButton"/>
 
