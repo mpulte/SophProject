@@ -10,7 +10,6 @@ import com.discordbot.util.ProfanityFilter;
 import com.discordbot.util.ProfanityFilterListener;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -109,8 +108,17 @@ public class DiscordBotApp extends Application {
         }
     }
 
+    public void handleSettingsMenu() {
+        try {
+            URL location = getClass().getResource("gui/SettingsPane.fxml");
+            StageHandler.getInstance().openStage("Settings", location, null, "Settings", false, 1);
+        } catch (IOException e) {
+            LOG.log(e);
+        }
+    }
+
     @FXML
-    public void handleProfanityFilterMenu(ActionEvent actionEvent) {
+    public void handleProfanityFilterMenu() {
         try {
             URL location = getClass().getResource("gui/ProfanityFilterPane.fxml");
             FXMLController controller = new ProfanityFilterController(filter);

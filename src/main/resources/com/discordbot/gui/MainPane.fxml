@@ -11,8 +11,11 @@
         fx:controller="com.discordbot.DiscordBotApp">
 
     <MenuBar>
-        <Menu text="Window">
+        <Menu text="Options">
             <MenuItem text="Tokens" onAction="#handleTokensMenu"/>
+            <MenuItem text="Settings" onAction="#handleSettingsMenu"/>
+        </Menu>
+        <Menu text="Window">
             <MenuItem text="Profanity Filter" onAction="#handleProfanityFilterMenu"/>
             <MenuItem text="Straw Poll" onAction="#handleStrawPollMenu"/>
         </Menu>
