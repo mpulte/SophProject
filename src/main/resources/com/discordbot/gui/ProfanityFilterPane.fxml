@@ -5,6 +5,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.CheckComboBox?>
+<?import javafx.scene.control.CheckBox?>
 <GridPane
         hgap="10" vgap="10"
         xmlns="http://javafx.com/javafx"
@@ -33,5 +34,17 @@
             text="Remove"
             prefWidth="70"
             GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+    <CheckBox
+            fx:id="replyGuildCheckBox"
+            text="Reply in server chat"
+            GridPane.columnIndex="0" GridPane.rowIndex="2"
+            GridPane.columnSpan="3"/>
+
+    <CheckBox
+            fx:id="replyPrivateCheckBox"
+            text="Reply in private chat"
+            GridPane.columnIndex="0" GridPane.rowIndex="3"
+            GridPane.columnSpan="3"/>
 
 </GridPane>
