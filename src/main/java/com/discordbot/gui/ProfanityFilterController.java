@@ -1,6 +1,6 @@
 package com.discordbot.gui;
 
-import com.discordbot.util.ProfanityFilter;
+import com.discordbot.model.ProfanityFilter;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

@@ -1,11 +1,11 @@
-package com.discordbot.util;
+package com.discordbot.model;
 
 import java.util.*;
 
 public class ProfanityFilter {
 
     private Set<String> blackList = new LowerCaseTreeSet();
-    private ChangeListener listener;
+    private ChangeListener listener = null;
 
     public ProfanityFilter() {
     }
@@ -26,7 +26,7 @@ public class ProfanityFilter {
     public ProfanityFilter add(String...words) {
         blackList.addAll(Arrays.asList(words));
         if (listener != null) {
-            listener.onChange(ChangeType.ADD, words);
+            listener.onChange(this, ChangeType.ADD, words);
         }
         return this;
     }
@@ -34,7 +34,7 @@ public class ProfanityFilter {
     public ProfanityFilter remove(String...words) {
         blackList.removeAll(Arrays.asList(words));
         if (listener != null) {
-            listener.onChange(ChangeType.REMOVE, words);
+            listener.onChange(this, ChangeType.REMOVE, words);
         }
         return this;
     }
@@ -49,7 +49,7 @@ public class ProfanityFilter {
     }
 
     public interface ChangeListener {
-        void onChange(ChangeType type, String...words);
+        void onChange(ProfanityFilter filter, ChangeType type, String...words);
     }
 
     public enum ChangeType { ADD, REMOVE }

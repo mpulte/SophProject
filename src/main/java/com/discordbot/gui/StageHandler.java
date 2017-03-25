@@ -58,7 +58,7 @@ public class StageHandler {
             fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
             fxmlLoader.setController(controller);
 
-            Stage stage = openStage(tag, new Scene(fxmlLoader.load(fxmlLocation.openStream())), title, resizeable);
+            Stage stage = openStage(tag, new Scene(fxmlLoader.load()), title, resizeable);
             if (controller == null) {
                 controller = fxmlLoader.getController();
             }

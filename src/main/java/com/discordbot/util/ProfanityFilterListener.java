@@ -1,5 +1,6 @@
 package com.discordbot.util;
 
+import com.discordbot.model.ProfanityFilter;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
