@@ -103,15 +103,16 @@ public class StageHandler {
         return stage;
     }
 
-    public synchronized void closeStages() {
-        for (List<Stage> list : stages.values()) {
-            while (!list.isEmpty()) {
-                Stage stage = list.get(0);
-                stage.fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST));
-                list.remove(stage);
-            }
+    public synchronized List<Stage> getStages(String tag) {
+        return stages.get(tag);
+    }
+
+    public synchronized StageHandler closeStages() {
+        String[] tags = stages.keySet().toArray(new String[stages.size()]);
+        for (String tag : tags) {
+            closeStages(tag);
         }
-        stages.clear();
+        return this;
     }
 
     public synchronized StageHandler closeStages(String tag) {
