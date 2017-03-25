@@ -1,40 +1,37 @@
 package com.discordbot.util;
 
-import javax.swing.JFileChooser;
-import java.io.File;
+import javafx.scene.control.Alert;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
 
 public final class FileUtil {
-	
-	public static final String OPEN = "Open";
-	public static final String SAVE = "Save";
-	
-	public static File chooseFile(String title, boolean allFiles, int selectionMode) {
-		// set up file chooser
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setCurrentDirectory(new File("."));
-		fileChooser.setDialogTitle(title);
-		fileChooser.setFileSelectionMode(selectionMode);
-		fileChooser.setAcceptAllFileFilterUsed(allFiles);
-		
-		// user selected file, return it
-		if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-			return fileChooser.getSelectedFile();
+
+	public static final String RESOURCE_FOLDER_SETTING = "resource_folder";
+	private static final String RESOURCE_FOLDER_DEFAULT = System.getProperty("user.home") + "/DiscordBot";
+
+	public static Path getResourceFolder() {
+		Path path;
+		try {
+			path = Paths.get(SettingsManager.getString(RESOURCE_FOLDER_SETTING));
+			if (!Files.isDirectory(path)) {
+				Alert alert = new Alert(Alert.AlertType.WARNING);
+				alert.setTitle("Resource Folder Not Found");
+				alert.setHeaderText("Unable To Find Resource Folder");
+				alert.setContentText("Resource folder was set to " + path.toString()
+						+ "\nDefaulting to " + RESOURCE_FOLDER_DEFAULT);
+				alert.showAndWait();
+
+				path = Paths.get(RESOURCE_FOLDER_DEFAULT);
+			}
+		} catch (InvalidKeyException e) {
+			path = Paths.get(RESOURCE_FOLDER_DEFAULT);
+			SettingsManager.setString(RESOURCE_FOLDER_SETTING, RESOURCE_FOLDER_DEFAULT);
 		}
-		
-		// user canceled dialog
-		return null;
-	} // method chooseFile
-	
-	public static File chooseFile(String title, boolean allFiles) {
-		return chooseFile(title, allFiles, JFileChooser.FILES_AND_DIRECTORIES);
-	} // method chooseFile
-	
-	public static File chooseFile(String title, int selectionMode) {
-		return chooseFile(title, false, selectionMode);
-	} // method chooseFile
-	
-	public static File chooseFile(String title) {
-		return chooseFile(title, true, JFileChooser.FILES_AND_DIRECTORIES);
-	} // method chooseFile
+
+        return path;
+	}
 
 } // class FileUtil
