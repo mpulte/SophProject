@@ -4,6 +4,8 @@ import javafx.scene.control.Alert;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -87,6 +89,17 @@ public final class IOUtils {
             String jsonText = org.apache.commons.io.IOUtils.toString(reader);
             return new JSONObject(jsonText);
         }
+    }
+
+    /**
+     * Downloads the image at the provided url.
+     *
+     * @param url The {@link URL} of the image.
+     * @return a {@link BufferedImage} containing the image.
+     * @throws IOException if the url cannot be reached.
+     */
+    public static BufferedImage readImageFromUrl(String url) throws IOException {
+        return ImageIO.read(new URL(url));
     }
 
 }

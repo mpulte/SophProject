@@ -78,4 +78,15 @@ public class CommandSetting {
         this.enabled = enabled;
     }
 
+    /**
+     * Checks if an {@link Object} is a CommandSetting with the same {@link Class} as this CommandSetting.
+     *
+     * @param obj the {@link Object} to check.
+     * @return <tt>true</tt> if the {@link Object} is a CommandSetting with the same {@link Class} as this
+     * CommandSetting, otherwise <tt>false</tt>.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof CommandSetting && ((CommandSetting) obj).cls.equals(cls);
+    }
 }

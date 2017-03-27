@@ -1,7 +1,10 @@
 package com.discordbot;
 
 import com.discordbot.command.*;
-import com.discordbot.gui.*;
+import com.discordbot.gui.FXMLController;
+import com.discordbot.gui.ProfanityFilterController;
+import com.discordbot.gui.StageHandler;
+import com.discordbot.gui.TokenController;
 import com.discordbot.model.ProfanityFilter;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.IOUtils;
@@ -63,6 +66,11 @@ public class DiscordBotApp extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+        // setup DiscordBot
+        initializeListeners();
+        loadCommands();
+        initializeProfanityFilter();
+
         // set up scene
         try {
             FXMLLoader fxmlLoader = new FXMLLoader();
@@ -74,11 +82,6 @@ public class DiscordBotApp extends Application {
             LOG.log(e);
             Platform.exit();
         }
-
-        // setup DiscordBot
-        initializeListeners();
-        loadCommands();
-        initializeProfanityFilter();
 
         // set up stage
         primaryStage.setTitle("DiscordBot");
@@ -176,7 +179,9 @@ public class DiscordBotApp extends Application {
         defaults.add(new CommandSetting(RollCommand.class, "roll", false));
         defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
         defaults.add(new CommandSetting(WikipediaCommand.class, "wiki", false));
+        defaults.add(new CommandSetting(XKCDCommand.class, "xkcd", false));
 
+        // load each command that is listed in defaults
         CommandDB database = new CommandDB();
         for (CommandSetting defaultSetting : defaults) {
             CommandSetting savedSetting = database.select(defaultSetting.getCls());
@@ -190,6 +195,20 @@ public class DiscordBotApp extends Application {
                 if (!savedSetting.isEnabled()) {
                     database.update(savedSetting);
                 }
+            }
+        }
+
+        // remove commands not listed in defaults from database
+        for (CommandSetting savedSetting : database.selectAll()) {
+            boolean found = false;
+            for (CommandSetting defaultSetting : defaults) {
+                if (savedSetting.equals(defaultSetting)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                database.delete(savedSetting.getCls());
             }
         }
     }
