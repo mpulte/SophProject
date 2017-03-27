@@ -24,11 +24,15 @@ import java.util.List;
 public class ProfanityFilterListener extends ListenerAdapter {
 
     /**
-     * The key to use for the ProfanityFilterListener's reply guild setting
+     * The key to use for the profanity filter enabled setting
+     */
+    public static final String SETTING_ENABLED = "profanity_filter_enabled";
+    /**
+     * The key to use for the profanity filter reply guild setting
      */
     public static final String SETTING_REPLY_GUILD = "profanity_filter_reply_guild";
     /**
-     * The key to use for the ProfanityFilterListener's reply private setting
+     * The key to use for the profanity filter reply private setting
      */
     public static final String SETTING_REPLY_PRIVATE = "profanity_filter_reply_private";
 

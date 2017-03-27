@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,9 +102,48 @@ public class DiscordBotApp extends Application {
      * Initializes the event listeners to be used by {@link DiscordBot}.
      */
     private void initializeListeners() {
-        DiscordBot.getInstance()
-                .addEventListener(new MessageListener())
-                .addEventListener(new ProfanityFilterListener(profanityFilter));
+        // load message listener
+        DiscordBot.getInstance().addEventListener(new MessageListener());
+
+        // load profanity filter listener
+        final ProfanityFilterListener profanityFilterListener = new ProfanityFilterListener(profanityFilter);
+        try {
+            // use enabled setting
+            if (SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED)) {
+                DiscordBot.getInstance().addEventListener(profanityFilterListener);
+            }
+        } catch (InvalidKeyException e) {
+            // default is enabled
+            SettingHandler.setBoolean(ProfanityFilterListener.SETTING_ENABLED, true);
+            DiscordBot.getInstance().addEventListener(profanityFilterListener);
+        }
+
+        // change listener for turning on and off profanity filter listener
+        try {
+            final boolean profanityFilterEnabled = SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED);
+            SettingHandler.addBooleanChangeListener(new SettingHandler.ChangeListener<Boolean>() {
+
+                boolean enabled = profanityFilterEnabled;
+
+                @Override
+                public void onChange(String key, Boolean value) {
+                    if (key.equals(ProfanityFilterListener.SETTING_ENABLED)) {
+                        if (value && !enabled) {
+                            DiscordBot.getInstance().addEventListener(profanityFilterListener);
+                            enabled = true;
+
+                        } else if (!value && enabled) {
+                            DiscordBot.getInstance().removeEventListener(profanityFilterListener);
+                            enabled = false;
+                        }
+                    }
+                }
+
+            });
+        } catch (InvalidKeyException e) {
+            LOG.warn("This should never be reached!");
+            LOG.log(e);
+        }
     }
 
     /**
@@ -152,7 +192,7 @@ public class DiscordBotApp extends Application {
             LOG.warn("profanity_filter.txt not found");
         }
 
-        // set up change listener
+        // set up profanity filter change listener
         profanityFilter.setChangeListener((filter, type, words) -> {
             try {
                 Files.write(IOUtils.getResourcePath("profanity_filter.txt"), filter.asList(),

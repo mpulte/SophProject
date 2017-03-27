@@ -36,6 +36,8 @@ public class ProfanityFilterController implements FXMLController {
     private CheckBox replyGuildCheckBox;
     @FXML
     private CheckBox replyPrivateCheckBox;
+    @FXML
+    private CheckBox enabledCheckBox;
 
     private ProfanityFilter filter;
 
@@ -63,6 +65,7 @@ public class ProfanityFilterController implements FXMLController {
         removeButton.setOnAction(e -> handleRemoveAction());
         replyGuildCheckBox.setOnAction(e -> handleGuildCheckBox());
         replyPrivateCheckBox.setOnAction(e -> handlePrivateCheckBox());
+        enabledCheckBox.setOnAction(e -> handleEnabledCheckBox());
 
         try {
             replyGuildCheckBox.setSelected(SettingHandler.getBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD));
@@ -73,6 +76,11 @@ public class ProfanityFilterController implements FXMLController {
             replyPrivateCheckBox.setSelected(SettingHandler.getBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE));
         } catch (InvalidKeyException e) {
             SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, false);
+        }
+        try {
+            enabledCheckBox.setSelected(SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED));
+        } catch (InvalidKeyException e) {
+            SettingHandler.setBoolean(ProfanityFilterListener.SETTING_ENABLED, false);
         }
 
         updateRemoveComboBox();
@@ -135,17 +143,24 @@ public class ProfanityFilterController implements FXMLController {
     }
 
     /**
-     * Updates the reply guild setting used by {@link ProfanityFilterListener}.
+     * Updates the profanity filter reply guild setting.
      */
     private void handleGuildCheckBox() {
         SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD, replyGuildCheckBox.isSelected());
     }
 
     /**
-     * Updates the reply private setting used by {@link ProfanityFilterListener}.
+     * Updates the profanity filter reply private setting.
      */
     private void handlePrivateCheckBox() {
         SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, replyPrivateCheckBox.isSelected());
+    }
+
+    /**
+     * Updates the profanity filter enabled setting.
+     */
+    private void handleEnabledCheckBox() {
+        SettingHandler.setBoolean(ProfanityFilterListener.SETTING_ENABLED, enabledCheckBox.isSelected());
     }
 
     /**

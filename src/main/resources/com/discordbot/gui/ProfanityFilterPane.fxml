@@ -47,4 +47,10 @@
             GridPane.columnIndex="0" GridPane.rowIndex="3"
             GridPane.columnSpan="3"/>
 
+    <CheckBox
+            fx:id="enabledCheckBox"
+            text="Enabled"
+            GridPane.columnIndex="0" GridPane.rowIndex="4"
+            GridPane.columnSpan="3"/>
+
 </GridPane>
