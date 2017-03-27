@@ -12,88 +12,139 @@ import javax.security.auth.login.LoginException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A singleton that handles the starting and stopping of the {@link JDA} as well as the adding and removing of {@link
+ * EventListener}s.
+ */
 public class DiscordBot {
 
-	private static final SimpleLog LOG = SimpleLog.getLog("DiscordBot");
+    private static final SimpleLog LOG = SimpleLog.getLog("DiscordBot");
 
-	private static DiscordBot instance;
+    private static DiscordBot instance;
 
-	private JDA jda;
-	private CommandHandler commandHandler;
+    private JDA jda;
+    private CommandHandler commandHandler;
 
     private Map<Class<? extends EventListener>, EventListener> listeners;
     private boolean canRestart;
-	
-	private DiscordBot() {
-	    listeners = new HashMap<>();
-	    canRestart = true;
-	    commandHandler = new CommandHandler();
-	    addEventListener(commandHandler);
-	}
-	
-	public static synchronized DiscordBot getInstance() {
-		if (instance == null) {
-			instance = new DiscordBot();
-		}
-		return instance;
-	}
 
-	public JDA getJDA() {
-		return jda;
-	} // method getInstance
+    /**
+     * Default constructor is private for singleton class.
+     */
+    private DiscordBot() {
+        listeners = new HashMap<>();
+        canRestart = true;
+        commandHandler = new CommandHandler();
+        addEventListener(commandHandler);
+    }
 
+    /**
+     * Accessor for the DiscordBot instance.
+     *
+     * @return the DiscordBot instance.
+     */
+    public static synchronized DiscordBot getInstance() {
+        if (instance == null) {
+            instance = new DiscordBot();
+        }
+        return instance;
+    }
+
+    /**
+     * Accessor for the {@link JDA}.
+     *
+     * @return the {@link JDA}.
+     */
+    public JDA getJDA() {
+        return jda;
+    }
+
+    /**
+     * Checks if the {@link JDA}.
+     *
+     * @return <tt>true</tt> if the {@link JDA} is running, <tt>false</tt> if the {@link JDA} was paused, shutdown, or
+     * not yet initialized.
+     */
     public synchronized boolean isRunning() {
-	    return jda != null
+        return jda != null
                 && jda.getStatus() != JDA.Status.SHUTDOWN
                 && jda.getStatus() != JDA.Status.SHUTTING_DOWN;
     }
-	
-	public synchronized DiscordBot start(String token) {
-	    // if we shutdown and freed api, we can't restart it
-	    if (!canRestart) {
-	        throw new IllegalStateException("JDA completely shutdown, can't restart");
+
+    /**
+     * Starts the {@link JDA}.
+     *
+     * @param token The token to use for logging into Discord.
+     * @return the DiscordBot instance.
+     */
+    public synchronized DiscordBot start(String token) {
+        // if we shutdown and freed api, we can't restart it
+        if (!canRestart) {
+            throw new IllegalStateException("JDA completely shutdown, can't restart");
         }
 
         // make sure bot isn't running
-		if (!isRunning()) {
-			try {
-				jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
-				jda.setAutoReconnect(true);
-			} catch (LoginException e) {
-				LOG.warn("JDA login failed");
-			} catch (IllegalArgumentException | InterruptedException | RateLimitedException e) {
+        if (!isRunning()) {
+            try {
+                jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
+                jda.setAutoReconnect(true);
+            } catch (LoginException e) {
+                LOG.warn("JDA login failed");
+            } catch (IllegalArgumentException | InterruptedException | RateLimitedException e) {
                 LOG.log(e);
             }
-		} else {
-			LOG.warn("JDA already running");
-		}
-		return this;
-	}
+        } else {
+            LOG.warn("JDA already running");
+        }
+        return this;
+    }
 
-	public synchronized DiscordBot pause() {
-		if (isRunning()) {
-			jda.shutdown(false);
-		}
-		return this;
-	}
+    /**
+     * Pauses the {@link JDA}.
+     *
+     * @return the DiscordBot instance.
+     */
+    public synchronized DiscordBot pause() {
+        if (isRunning()) {
+            jda.shutdown(false);
+        }
+        return this;
+    }
 
-	public synchronized DiscordBot shutdown() {
-		if (jda != null && canRestart) {
-			jda.shutdown();
+    /**
+     * Shuts down the {@link JDA}. The {@link JDA} cannot be restarted after shutdown has been called.
+     *
+     * @return the DiscordBot instance.
+     */
+    public synchronized DiscordBot shutdown() {
+        if (jda != null && canRestart) {
+            jda.shutdown();
             canRestart = false;
-		}
-		return this;
-	}
+        }
+        return this;
+    }
 
-	public synchronized DiscordBot reboot(String token) {
-		if (jda != null) {
-			jda.shutdown(false);
-		}
-		start(token);
-		return this;
-	}
+    /**
+     * Reboots the {@link JDA}
+     *
+     * @param token The token to use for logging into Discord.
+     * @return the DiscordBot instance.
+     */
+    public synchronized DiscordBot reboot(String token) {
+        if (jda != null) {
+            jda.shutdown(false);
+        }
+        start(token);
+        return this;
+    }
 
-    public DiscordBot addEventListener(EventListener...listeners) {
+    /**
+     * Adds {@link EventListener}s to the DiscordBot and the {@link JDA} if it is running.
+     *
+     * @param listeners The {@link EventListener}s to add.
+     * @return the DiscordBot instance.
+     */
+    public DiscordBot addEventListener(EventListener... listeners) {
         for (EventListener listener : listeners) {
             // will overwrite old listener, make sure its removed first
             if (this.listeners.containsKey(listener.getClass())) {
@@ -109,7 +160,13 @@ public class DiscordBot {
         return this;
     }
 
-    public DiscordBot removeEventListener(EventListener...listeners) {
+    /**
+     * Removes {@link EventListener}s from the DiscordBot and the {@link JDA} if it is running.
+     *
+     * @param listeners The {@link EventListener}s to remove.
+     * @return the DiscordBot instance.
+     */
+    public DiscordBot removeEventListener(EventListener... listeners) {
         for (EventListener listener : listeners) {
             if (isRunning()) {
                 jda.removeEventListener(listener);
@@ -119,8 +176,13 @@ public class DiscordBot {
         return this;
     }
 
+    /**
+     * Accessor for the {@link CommandHandler}.
+     *
+     * @return the {@link CommandHandler}.
+     */
     public CommandHandler getCommandHandler() {
         return commandHandler;
-    } // method getCommandHandler
+    }
 
 }

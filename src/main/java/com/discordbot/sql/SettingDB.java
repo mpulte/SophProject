@@ -9,7 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unchecked")
+/**
+ * A {@link SQLiteDatabase} for querying the Settings Database.
+ *
+ * @see SQLiteDatabase
+ */
 public class SettingDB extends SQLiteDatabase<Setting, String> {
 
     private static final int DB_VERSION = 1;
@@ -22,32 +26,53 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
     // create table statement
     private static final String CREATE_TABLE_SETTING =
             "CREATE TABLE IF NOT EXISTS " + SETTING + " (" +
-                    SETTING_KEY   + " TEXT     NOT NULL  PRIMARY KEY, " +
+                    SETTING_KEY + " TEXT     NOT NULL  PRIMARY KEY, " +
                     SETTING_VALUE + " TEXT     NOT NULL);";
 
     // drop table statement
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + SETTING;
 
+    /**
+     * Default constructor
+     */
     public SettingDB() {
         super(DB_VERSION);
-    } // constructor
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be created.
+     */
     @Override
     protected void onCreate() {
         query(CREATE_TABLE_SETTING);
-    } // method onCreate
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be destroyed.
+     */
     @Override
     protected void onDestroy() {
         query(DROP_TABLE);
-    }  // method onDestroy
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database version has increased.
+     *
+     * @param oldVersion The previous version of the SettingDB.
+     * @param newVersion The new version of the SettingDB.
+     */
     @Override
     protected void onUpgrade(int oldVersion, int newVersion) {
         onReset();
         LOG.info("Upgrading SettingDB from version " + oldVersion + " to " + newVersion);
-    } // method onReset
+    }
 
+    /**
+     * Selects a {@link Setting}.
+     *
+     * @param key The key of the {@link Setting} to select.
+     * @return the {@link Setting} or null if no such {@link Setting} exists.
+     */
     @Override
     public Setting select(String key) {
         Connection connection = connectionPool.getConnection();
@@ -76,8 +101,13 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Selects all {@link Setting}s.
+     *
+     * @return a {@link List<Setting>}.
+     */
     @Override
     public List<Setting> selectAll() {
         Connection connection = connectionPool.getConnection();
@@ -106,10 +136,16 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Inserts one or more {@link Setting}.
+     *
+     * @param settings The {@link Setting}s to insert.
+     * @return the number of {@link Setting}s inserted.
+     */
     @Override
-    public int insert(Setting...settings) {
+    public int insert(Setting... settings) {
         String query = "INSERT INTO " + SETTING +
                 " (" + SETTING_KEY + "," + SETTING_VALUE + ")" +
                 "VALUES (?,?)";
@@ -119,10 +155,16 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             result += query(query, setting.getKey(), setting.getValue());
         }
         return result;
-    } // method insert
+    }
 
+    /**
+     * Updates one or more {@link Setting}.
+     *
+     * @param settings The {@link Setting}s to update.
+     * @return the number of {@link Setting}s updated.
+     */
     @Override
-    public int update(Setting...settings) {
+    public int update(Setting... settings) {
         String query = "UPDATE " + SETTING + " SET " + SETTING_VALUE + " = ?" + " WHERE " + SETTING_KEY + " = ?";
 
         int result = 0;
@@ -130,10 +172,16 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             result += query(query, setting.getValue(), setting.getKey());
         }
         return result;
-    } // method update
+    }
 
+    /**
+     * Deletes one or more {@link Setting}.
+     *
+     * @param keys The key of the {@link Setting}s to delete.
+     * @return the number of {@link Setting}s deleted.
+     */
     @Override
-    public int delete(String...keys) {
+    public int delete(String... keys) {
         String query = "DELETE FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
 
         int result = 0;
@@ -141,8 +189,14 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             result += query(query, key);
         }
         return result;
-    } // method delete
+    }
 
+    /**
+     * Checks if a {@link Setting} of a given key exists.
+     *
+     * @param key The key of the {@link Setting}.
+     * @return <tt>true</tt> if a {@link Setting} exists, <tt>false</tt> otherwise.
+     */
     @Override
     public boolean exists(String key) {
         Connection connection = connectionPool.getConnection();
@@ -168,6 +222,6 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method exists
+    }
 
-} // class DiscordBotDB
+}

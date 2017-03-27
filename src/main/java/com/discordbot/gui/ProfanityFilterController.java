@@ -2,7 +2,7 @@ package com.discordbot.gui;
 
 import com.discordbot.model.ProfanityFilter;
 import com.discordbot.util.ProfanityFilterListener;
-import com.discordbot.util.SettingsManager;
+import com.discordbot.util.SettingHandler;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -17,27 +17,45 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link FXMLController} implementation for controlling ProfanityFilterPane.fxml.
+ *
+ * @see FXMLController
+ */
 public class ProfanityFilterController implements FXMLController {
 
     @FXML
-    public TextField addField;
+    private TextField addField;
     @FXML
-    public Button addButton;
+    private Button addButton;
     @FXML
-    public CheckComboBox<String> removeComboBox;
+    private CheckComboBox<String> removeComboBox;
     @FXML
-    public Button removeButton;
+    private Button removeButton;
     @FXML
-    public CheckBox replyGuildCheckBox;
+    private CheckBox replyGuildCheckBox;
     @FXML
-    public CheckBox replyPrivateCheckBox;
+    private CheckBox replyPrivateCheckBox;
 
     private ProfanityFilter filter;
 
+    /**
+     * @param filter The {@link ProfanityFilter} to use for filtering.
+     */
     public ProfanityFilterController(ProfanityFilter filter) {
         this.filter = filter;
     }
 
+    /**
+     * Initializes the ProfanityFilterController. Sets up the {@link javafx.event.EventHandler}s for the JavaFX {@link
+     * javafx.scene.control.Control}s and calls {@link #updateRemoveComboBox()}.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or <tt>null</tt> if the
+     *                  location is not known.
+     * @param resources The resources used to localize the root object, or <tt>null</tt> if the root object was not
+     *                  localized.
+     * @see javafx.fxml.Initializable#initialize(URL, ResourceBundle)
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         addField.setOnAction(e -> handleAddAction());
@@ -47,23 +65,29 @@ public class ProfanityFilterController implements FXMLController {
         replyPrivateCheckBox.setOnAction(e -> handlePrivateCheckBox());
 
         try {
-            replyGuildCheckBox.setSelected(SettingsManager.getBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD));
+            replyGuildCheckBox.setSelected(SettingHandler.getBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD));
         } catch (InvalidKeyException e) {
-            SettingsManager.setBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD, false);
+            SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD, false);
         }
         try {
-            replyPrivateCheckBox.setSelected(SettingsManager.getBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE));
+            replyPrivateCheckBox.setSelected(SettingHandler.getBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE));
         } catch (InvalidKeyException e) {
-            SettingsManager.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, false);
+            SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, false);
         }
 
         updateRemoveComboBox();
     }
 
+    /**
+     * Not implemented
+     */
     @Override
     public void stop() {
     }
 
+    /**
+     * Adds the word in {@link #addField} to the {@link ProfanityFilter}.
+     */
     public void handleAddAction() {
         String word = addField.getText();
         if (!word.isEmpty()) {
@@ -73,6 +97,9 @@ public class ProfanityFilterController implements FXMLController {
         }
     }
 
+    /**
+     * Adds the words selected in {@link #removeComboBox} from the {@link ProfanityFilter}.
+     */
     public void handleRemoveAction() {
         Collection<String> words = removeComboBox.getCheckModel().getCheckedItems();
         if (!words.isEmpty()) {
@@ -81,6 +108,9 @@ public class ProfanityFilterController implements FXMLController {
         }
     }
 
+    /**
+     * Updates {@link #removeComboBox} with the list from the {@link ProfanityFilter}.
+     */
     private void updateRemoveComboBox() {
         ObservableList<String> comboBoxList = removeComboBox.getItems();
         List<String> filterList = filter.asList();
@@ -104,14 +134,23 @@ public class ProfanityFilterController implements FXMLController {
         comboBoxList.sort(String::compareTo);
     }
 
+    /**
+     * Updates the reply guild setting used by {@link ProfanityFilterListener}.
+     */
     private void handleGuildCheckBox() {
-        SettingsManager.setBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD, replyGuildCheckBox.isSelected());
+        SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_GUILD, replyGuildCheckBox.isSelected());
     }
 
+    /**
+     * Updates the reply private setting used by {@link ProfanityFilterListener}.
+     */
     private void handlePrivateCheckBox() {
-        SettingsManager.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, replyPrivateCheckBox.isSelected());
+        SettingHandler.setBoolean(ProfanityFilterListener.SETTING_REPLY_PRIVATE, replyPrivateCheckBox.isSelected());
     }
 
+    /**
+     * Not implemented
+     */
     @Override
     public void setResizeListener(ResizeListener listener) {
     }

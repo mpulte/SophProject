@@ -2,19 +2,25 @@ package com.discordbot.model;
 
 import java.util.*;
 
+/**
+ * A profanity filter containing a blacklist of words to filter out of messages.
+ */
 public class ProfanityFilter {
 
-    private Set<String> blackList = new LowerCaseTreeSet();
+    private Set<String> blacklist = new LowerCaseTreeSet();
     private ChangeListener listener = null;
 
-    public ProfanityFilter() {
-    }
-
-    public Collection<String> filter(String s) {
-        Collection<String> badWords = new ArrayList<>();
-        String[] words = s.split("\\W+");
-        for (String word : words) {
-            for (String wordBL : blackList) {
+    /**
+     * Filters a {@link String} for words in the blacklist.
+     *
+     * @param s The {@link String} to filter.
+     * @return a {@link List<String>} of words from the blacklist found in the provided {@link String}. Returns an empty
+     * {@link List<String>} if no words were found.
+     */
+    public List<String> filter(String s) {
+        List<String> badWords = new ArrayList<>();
+        for (String word : s.split("\\W+")) {
+            for (String wordBL : blacklist) {
                 if (wordBL.equalsIgnoreCase(word)) {
                     badWords.add(word.toLowerCase());
                 }
@@ -23,37 +29,80 @@ public class ProfanityFilter {
         return badWords;
     }
 
-    public ProfanityFilter add(String...words) {
-        blackList.addAll(Arrays.asList(words));
+    /**
+     * Adds one or more words to the blacklist.
+     *
+     * @param words The words to add.
+     * @return a reference to this ProfanityFilter.
+     */
+    public ProfanityFilter add(String... words) {
+        blacklist.addAll(Arrays.asList(words));
         if (listener != null) {
             listener.onChange(this, ChangeType.ADD, words);
         }
         return this;
     }
 
-    public ProfanityFilter remove(String...words) {
-        blackList.removeAll(Arrays.asList(words));
+    /**
+     * Removes one or more words from the blacklist.
+     *
+     * @param words The words to remove.
+     * @return a reference to this ProfanityFilter.
+     */
+    public ProfanityFilter remove(String... words) {
+        blacklist.removeAll(Arrays.asList(words));
         if (listener != null) {
             listener.onChange(this, ChangeType.REMOVE, words);
         }
         return this;
     }
 
+    /**
+     * Accesses the blacklist.
+     *
+     * @return the blacklist.
+     */
     public List<String> asList() {
-        return new ArrayList<>(blackList);
+        return new ArrayList<>(blacklist);
     }
 
+    /**
+     * Sets the {@link ChangeListener} for handling changes to the blacklist.
+     *
+     * @param listener The {@link ChangeListener} to set.
+     * @return a reference to this ProfanityFilter.
+     */
     public ProfanityFilter setChangeListener(ChangeListener listener) {
         this.listener = listener;
         return this;
     }
 
-    public interface ChangeListener {
-        void onChange(ProfanityFilter filter, ChangeType type, String...words);
+    /**
+     * The types of changes to the blacklist that can occur.
+     */
+    public enum ChangeType {
+        ADD, REMOVE
     }
 
-    public enum ChangeType { ADD, REMOVE }
+    /**
+     * Handles changes to the blacklist.
+     */
+    public interface ChangeListener {
+        /**
+         * Called when changes to the blacklist occur.
+         *
+         * @param filter The {@link ProfanityFilter} that changed.
+         * @param type   The {@link ChangeType} that occurred.
+         * @param words  The word or words that changed.
+         */
+        void onChange(ProfanityFilter filter, ChangeType type, String... words);
+    }
 
+    /**
+     * A {@link TreeSet<String>} that converts all {@link String}s to lower case.
+     *
+     * @see TreeSet
+     */
     private class LowerCaseTreeSet extends TreeSet<String> {
 
         LowerCaseTreeSet() {

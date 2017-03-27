@@ -1,9 +1,25 @@
+/*
+ * Copyright 2016-2017 Wolfgang Schele
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.discordbot.gui;
 
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
-import javafx.event.EventHandler;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -11,55 +27,48 @@ import javafx.scene.input.KeyEvent;
 
 import java.util.regex.Pattern;
 
+/**
+ * Code modified from Stack Overflow:
+ * http://stackoverflow.com/questions/34851382/javafx-timetextfield
+ * Question by Wolfgang Schele:
+ * http://stackoverflow.com/users/5114084/wolfgang-schele
+ */
 public class TimeTextField extends TextField {
 
-    enum Unit {
-        HOURS, MINUTES, SECONDS
-    };
-
     private final Pattern timePattern;
-
     private final ReadOnlyIntegerWrapper hours;
-
     private final ReadOnlyIntegerWrapper minutes;
-
     private final ReadOnlyIntegerWrapper seconds;
 
     public TimeTextField() {
         this("00:00:00");
-        this.addEventFilter(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent inputevent) {
-                int c = TimeTextField.this.getCaretPosition();
-                if (c <= 7) {
-                    if (!"1234567890:".contains(inputevent.getCharacter().toLowerCase())) {
-                        inputevent.consume();
-                    }
-                } else {
-                    inputevent.consume();
+        this.addEventFilter(KeyEvent.KEY_TYPED, inputEvent -> {
+            int c = TimeTextField.this.getCaretPosition();
+            if (c <= 7) {
+                if (!"1234567890:".contains(inputEvent.getCharacter().toLowerCase())) {
+                    inputEvent.consume();
                 }
+            } else {
+                inputEvent.consume();
             }
         });
-        this.addEventFilter(KeyEvent.KEY_RELEASED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent inputevent) {
-                boolean withMinutes = false;
-                if (TimeTextField.this.getText() != null && TimeTextField.this.getText().length() >= 5
-                        && TimeTextField.this.getText().indexOf(":") == 2) {
-                    withMinutes = true;
-                }
-                boolean withSeconds = false;
-                if (TimeTextField.this.getText() != null && TimeTextField.this.getText().length() == 8
-                        && TimeTextField.this.getText().lastIndexOf(":") == 5) {
-                    withSeconds = true;
-                }
+        this.addEventFilter(KeyEvent.KEY_RELEASED, inputEvent -> {
+            boolean withMinutes = false;
+            if (TimeTextField.this.getText() != null && TimeTextField.this.getText().length() >= 5
+                    && TimeTextField.this.getText().indexOf(":") == 2) {
+                withMinutes = true;
+            }
+            boolean withSeconds = false;
+            if (TimeTextField.this.getText() != null && TimeTextField.this.getText().length() == 8
+                    && TimeTextField.this.getText().lastIndexOf(":") == 5) {
+                withSeconds = true;
+            }
 
-                int c = TimeTextField.this.getCaretPosition();
-                if (((c == 2 && withMinutes) || (c == 5 && withSeconds))
-                        && (inputevent.getCode() != KeyCode.LEFT && inputevent.getCode() != KeyCode.BACK_SPACE)) {
-                    TimeTextField.this.forward();
-                    inputevent.consume();
-                }
+            int c = TimeTextField.this.getCaretPosition();
+            if (((c == 2 && withMinutes) || (c == 5 && withSeconds))
+                    && (inputEvent.getCode() != KeyCode.LEFT && inputEvent.getCode() != KeyCode.BACK_SPACE)) {
+                TimeTextField.this.forward();
+                inputEvent.consume();
             }
         });
 
@@ -237,21 +246,14 @@ public class TimeTextField extends TextField {
             int hours = Integer.parseInt(tokens[0]);
             int mins = Integer.parseInt(tokens[1]);
             int secs = Integer.parseInt(tokens[2]);
-            if (hours < 0 || hours > 23) {
-                return false;
-            }
-            if (mins < 0 || mins > 59) {
-                return false;
-            }
-            if (secs < 0 || secs > 59) {
-                return false;
-            }
-            return true;
+            return !(hours < 0 || hours > 23 || mins < 0 || mins > 59 || secs < 0 || secs > 59);
         } catch (NumberFormatException nfe) {
-            // regex matching should assure we never reach this catch block
-            assert false;
             return false;
         }
+    }
+
+    enum Unit {
+        HOURS, MINUTES, SECONDS
     }
 
     private final class TimeUnitBinding extends IntegerBinding {

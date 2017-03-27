@@ -6,9 +6,10 @@ import com.discordbot.gui.ProfanityFilterController;
 import com.discordbot.gui.StageHandler;
 import com.discordbot.model.ProfanityFilter;
 import com.discordbot.sql.CommandDB;
-import com.discordbot.util.FileUtil;
+import com.discordbot.util.IOUtils;
 import com.discordbot.util.MessageListener;
 import com.discordbot.util.ProfanityFilterListener;
+import com.discordbot.util.SettingHandler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -28,21 +29,39 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DiscordBotApp is the entry point for the DiscordBot application. It starts the application and handles any JavaFX
+ * actions from the MainPane.
+ */
 public class DiscordBotApp extends Application {
 
     private static final SimpleLog LOG = SimpleLog.getLog("DiscordBotApp");
 
+    @FXML
+    private MenuItem tokensMenuItem;
+    @FXML
+    private MenuItem settingsMenuItem;
+    @FXML
+    private MenuItem profanityFilterMenuItem;
+    @FXML
+    private MenuItem strawPollMenuItem;
+
     private ProfanityFilter profanityFilter = new ProfanityFilter();
 
-    @FXML
-    MenuItem tokensMenuItem;
-    @FXML
-    MenuItem settingsMenuItem;
-    @FXML
-    MenuItem profanityFilterMenuItem;
-    @FXML
-    MenuItem strawPollMenuItem;
+    /**
+     * Starts DiscordBotApp
+     *
+     * @param args The command line arguments.
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
 
+    /**
+     * The main entry point for the JavaFX application.
+     *
+     * @param primaryStage The primary {@link Stage} for this application, onto which the application scene can be set.
+     */
     @Override
     public void start(Stage primaryStage) {
         // set up scene
@@ -78,12 +97,19 @@ public class DiscordBotApp extends Application {
         primaryStage.setWidth(Math.min(primaryStage.getWidth(), primaryScreenBounds.getWidth()));
     }
 
+    /**
+     * Initializes the event listeners to be used by {@link DiscordBot}.
+     */
     private void initializeListeners() {
         DiscordBot.getInstance()
                 .addEventListener(new MessageListener())
                 .addEventListener(new ProfanityFilterListener(profanityFilter));
     }
 
+    /**
+     * Loads {@link CommandSetting} from the {@link CommandDB} database. If {@link CommandSetting}s are not yet stored
+     * in the database, the default values will be inserted in the database.
+     */
     private void loadCommands() {
         List<CommandSetting> defaults = new ArrayList<>();
         defaults.add(new CommandSetting(HelpCommand.class, "help", false));
@@ -109,10 +135,15 @@ public class DiscordBotApp extends Application {
         }
     }
 
+    /**
+     * Initializes the {@link ProfanityFilter}. Loads the file "profanity_filter.txt" from the resource folder set in
+     * {@link SettingHandler}. Adds a {@link com.discordbot.model.ProfanityFilter.ChangeListener}
+     * for saving changes to the "profanity_filter.txt" file.
+     */
     private void initializeProfanityFilter() {
         // load list from file
         try {
-            List<String> lines = Files.readAllLines(FileUtil.getResourcePath("profanity_filter.txt"));
+            List<String> lines = Files.readAllLines(IOUtils.getResourcePath("profanity_filter.txt"));
             if (!lines.isEmpty()) {
                 profanityFilter.add(lines.toArray(new String[lines.size()]));
             }
@@ -123,7 +154,7 @@ public class DiscordBotApp extends Application {
         // set up change listener
         profanityFilter.setChangeListener((filter, type, words) -> {
             try {
-                Files.write(FileUtil.getResourcePath("profanity_filter.txt"), filter.asList(),
+                Files.write(IOUtils.getResourcePath("profanity_filter.txt"), filter.asList(),
                         Charset.forName("UTF-8"));
             } catch (IOException e) {
                 LOG.log(e);
@@ -131,6 +162,9 @@ public class DiscordBotApp extends Application {
         });
     }
 
+    /**
+     * Sets each {@link MenuItem}'s {@link java.awt.event.ActionListener}.
+     */
     private void initializeMenu() {
         tokensMenuItem.setOnAction(e -> handleTokensMenu());
         settingsMenuItem.setOnAction(e -> handleSettingsMenu());
@@ -138,11 +172,18 @@ public class DiscordBotApp extends Application {
         strawPollMenuItem.setOnAction(e -> handleStrawPollMenu());
     }
 
+    /**
+     * This method is called when the application should stop. It calls {@link DiscordBot#shutdown()
+     * DiscordBot.getInstance().shutdown()}.
+     */
     @Override
     public void stop() {
         DiscordBot.getInstance().shutdown();
     }
 
+    /**
+     * Opens a new window of the Token Pane using {@link StageHandler}. Only allows one instance of the pane.
+     */
     @FXML
     public void handleTokensMenu() {
         try {
@@ -153,6 +194,10 @@ public class DiscordBotApp extends Application {
         }
     }
 
+
+    /**
+     * Opens a new window of the Settings Pane using {@link StageHandler}. Only allows one instance of the pane.
+     */
     public void handleSettingsMenu() {
         try {
             URL location = getClass().getResource("gui/SettingsPane.fxml");
@@ -162,6 +207,9 @@ public class DiscordBotApp extends Application {
         }
     }
 
+    /**
+     * Opens a new window of the Profanity Filter Pane using {@link StageHandler}. Only allows one instance of the pane.
+     */
     @FXML
     public void handleProfanityFilterMenu() {
         try {
@@ -173,6 +221,9 @@ public class DiscordBotApp extends Application {
         }
     }
 
+    /**
+     * Opens a new window of the Straw Poll Pane using {@link StageHandler}. Allows unlimited instances of the pane.
+     */
     @FXML
     public void handleStrawPollMenu() {
         try {
@@ -181,10 +232,6 @@ public class DiscordBotApp extends Application {
         } catch (IOException e) {
             LOG.log(e);
         }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 
 }

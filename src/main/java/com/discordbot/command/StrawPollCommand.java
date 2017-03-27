@@ -4,18 +4,37 @@ import com.discordbot.model.StrawPoll;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.exceptions.PermissionException;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
+/**
+ * A {@link CommandListener} for handling the straw poll command.
+ *
+ * @see CommandListener
+ */
 public class StrawPollCommand extends CommandListener {
+
+    private static final SimpleLog LOG = SimpleLog.getLog("StrawPollCommand");
 
     private StrawPoll poll;
     private String channelId;
 
+    /**
+     * @param handler The {@link CommandHandler} the StrawPollCommand is bound to.
+     */
     public StrawPollCommand(CommandHandler handler, StrawPoll poll, String channelId) {
         super(handler);
         this.poll = poll;
         this.channelId = channelId;
-    } // constructor
+    }
 
+    /**
+     * Handles any {@link CommandReceivedEvent}. Tallies responses to the poll on the specified {@link
+     * net.dv8tion.jda.core.entities.TextChannel} or any {@link net.dv8tion.jda.core.entities.PrivateChannel}. Posts the
+     * poll prompt if no argument is supplied.
+     *
+     * @param event The {@link CommandReceivedEvent} to handle.
+     */
     @Override
     public void onCommandReceived(CommandReceivedEvent event) {
         MessageReceivedEvent source = event.getMessageReceivedEvent();
@@ -26,7 +45,18 @@ public class StrawPollCommand extends CommandListener {
             return;
         }
 
+        // if it is a text channel, mark the message for deletion to prevent spam
+        if (source.getChannelType() == ChannelType.TEXT) {
+            try {
+                event.getMessageReceivedEvent().getMessage().delete().queue();
+            } catch (PermissionException | IllegalStateException e) {
+                LOG.warn(e.getMessage());
+                return;
+            }
+        }
+
         try {
+            // if the event has arguments try to parse the response, otherwise post the poll
             if (!event.getArgs().isEmpty()) {
                 poll.putResponse(author.getId(), Integer.parseInt(event.getArgs().get(0)));
             } else {
@@ -59,21 +89,38 @@ public class StrawPollCommand extends CommandListener {
                 }).run();
             }
         }
-    } // method onCommandReceivedEvent
+    }
 
+    /**
+     * Used for identifying if a {@link CommandReceivedEvent} should be sent to the StrawPollCommand. The
+     * StrawPollCommand only works on channels of type {@link ChannelType#TEXT} and {@link ChannelType#PRIVATE}.
+     *
+     * @param type The {@link ChannelType} to use.
+     * @return True if the StrawPollCommand uses the {@link ChannelType}. False otherwise.
+     */
     @Override
     public boolean usesChannel(ChannelType type) {
         return type == ChannelType.TEXT || type == ChannelType.PRIVATE;
-    } // method useChannel
+    }
 
+    /**
+     * Used for accessing a description of the StrawPollCommand.
+     *
+     * @return A {@link String} description of the StrawPollCommand.
+     */
     @Override
     public String getDescription() {
         return "Adds a response to a straw poll.";
-    } // method getDescription
+    }
 
+    /**
+     * Used for accessing receiving help for using the StrawPollCommand.
+     *
+     * @return A {@link String} description of help for the StrawPollCommand.
+     */
     @Override
     public String getHelp() {
         return "Takes one argument, the number of the option you would like to select for the poll.";
-    } // method getHelp
+    }
 
-} // class RollCommand
+}

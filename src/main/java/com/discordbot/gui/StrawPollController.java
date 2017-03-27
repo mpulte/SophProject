@@ -25,10 +25,15 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A {@link FXMLController} implementation for controlling StrawPollPane.fxml.
+ *
+ * @see FXMLController
+ */
 public class StrawPollController implements FXMLController {
 
     @FXML
-    public GridPane gridPane;
+    private GridPane gridPane;
     @FXML
     private Button startStopButton;
     @FXML
@@ -53,6 +58,44 @@ public class StrawPollController implements FXMLController {
     private StatusListener statusListener = null;
     private StrawPoll poll = null;
 
+    /**
+     * Initializes the StrawPollController. It adds the first two rows of options and initializes the {@link
+     * #guildComboBox}, {@link #channelComboBox}, and {@link #statusListener}.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or <tt>null</tt> if the
+     *                  location is not known.
+     * @param resources The resources used to localize the root object, or <tt>null</tt> if the root object was not
+     *                  localized.
+     * @see javafx.fxml.Initializable#initialize(URL, ResourceBundle)
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // add two options (the minimum)
+        addOption();
+        addOption();
+
+        // initialize combo boxes
+        updateGuildComboBox();
+        updateChannelComboBox();
+        guildComboBox.setOnAction(e -> updateChannelComboBox());
+
+        // initialize status listener
+        statusListener = new StatusListener();
+        DiscordBot.getInstance().addEventListener(statusListener);
+    }
+
+    /**
+     * Removes {@link #statusListener} from {@link DiscordBot} and calls {@link #stopListening()}.
+     */
+    @Override
+    public void stop() {
+        DiscordBot.getInstance().removeEventListener(statusListener);
+        stopListening();
+    }
+
+    /**
+     * Handles {@link #startStopButton} clicks.
+     */
     @FXML
     private synchronized void handleStartStopButton() {
         if (timer == null) {
@@ -60,20 +103,26 @@ public class StrawPollController implements FXMLController {
         } else {
             stopListening();
         }
-    } // method handleStartStopButton
+    }
 
+    /**
+     * Handles results button clicks.
+     */
     @FXML
     private void handleResultsButton() {
         if (DiscordBot.getInstance().isRunning() && filledOut(false) && poll != null) {
             DiscordBot.getInstance().getJDA().getTextChannelById(channelComboBox.getValue().getId())
                     .sendMessage(poll.resultsAsString()).queue();
         }
-    } // method handleResultsButton
+    }
 
+    /**
+     * Handles {@link #addOptionButton} clicks.
+     */
     @FXML
     private void handleAddOptionButton() {
         addOption();
-    } // method handleAddOptionButton
+    }
 
     private void addOption() {
         final int row = GridPane.getRowIndex(addOptionButton);
@@ -97,8 +146,11 @@ public class StrawPollController implements FXMLController {
         if (resizeListener != null) {
             resizeListener.onResize();
         }
-    } // method addOption
+    }
 
+    /**
+     * Handles {@link #removeButtons} clicks.
+     */
     private void removeOption(int row) {
         // don't allow less than 2 rows
         if (optionFields.size() <= 2) {
@@ -116,7 +168,7 @@ public class StrawPollController implements FXMLController {
                     // remove text field from row to remove
                     toRemove.add(node);
                     optionFields.remove(node);
-                } else if (rowIndex > row){
+                } else if (rowIndex > row) {
                     // move text fields below the row to remove
                     toMove.add(node);
                 }
@@ -149,8 +201,11 @@ public class StrawPollController implements FXMLController {
         if (resizeListener != null) {
             resizeListener.onResize();
         }
-    } // method removeOption
+    }
 
+    /**
+     * Starts the timer and adds a {@link StrawPollController} to the {@link CommandHandler}.
+     */
     private synchronized void startListening() {
         CommandHandler commandHandler = DiscordBot.getInstance().getCommandHandler();
         if (timer == null && filledOut(true) && !commandHandler.isTag(tagField.getText())) {
@@ -206,8 +261,11 @@ public class StrawPollController implements FXMLController {
             startStopButton.setText("Stop");
             setEditable(false);
         }
-    } // method startListening
+    }
 
+    /**
+     * Starts the timer and removes a {@link StrawPollController} from the {@link CommandHandler}.
+     */
     private synchronized void stopListening() {
         // remove the command listener
         DiscordBot.getInstance().getCommandHandler().removeCommandListener(tagField.getText());
@@ -228,13 +286,19 @@ public class StrawPollController implements FXMLController {
                                 + poll.resultsAsString()).queue();
             }
         }
-    } // method stopListening
+    }
 
+    /**
+     * Checks that each Control is filled out. The {@link #timeField} is only checked if specified.
+     *
+     * @param checkTimer Specifies whether to check the {@link #timeField}.
+     * @return <tt>true</tt> if all Controls are filled out, <tt>false</tt> otherwise.
+     */
     private boolean filledOut(boolean checkTimer) {
         if (checkTimer && timeField.getHours() == 0 && timeField.getMinutes() == 0 && timeField.getSeconds() == 0) {
             timeField.requestFocus();
             return false;
-        } else if (tagField.getText().equals("")){
+        } else if (tagField.getText().equals("")) {
             tagField.requestFocus();
             return false;
         } else if (guildComboBox.getSelectionModel().getSelectedItem() == null) {
@@ -243,19 +307,24 @@ public class StrawPollController implements FXMLController {
         } else if (channelComboBox.getSelectionModel().getSelectedItem() == null) {
             channelComboBox.requestFocus();
             return false;
-        } else if (promptField.getText().equals("")){
+        } else if (promptField.getText().equals("")) {
             promptField.requestFocus();
             return false;
         }
         for (TextField field : optionFields) {
-            if (field.getText().equals("")){
+            if (field.getText().equals("")) {
                 field.requestFocus();
                 return false;
             }
         }
         return true;
-    } // method filledOut
+    }
 
+    /**
+     * Enables or disables editing of the Controls.
+     *
+     * @param enabled Whether editing should be enabled (<tt>true</tt>) or disabled(<tt>false</tt>).
+     */
     private void setEditable(boolean enabled) {
         timeField.setEditable(enabled);
         tagField.setEditable(enabled);
@@ -266,8 +335,11 @@ public class StrawPollController implements FXMLController {
         for (Button button : removeButtons) {
             button.setDisable(!enabled);
         }
-    } // method setEditable
+    }
 
+    /**
+     * Updates the list of {@link Guild}s in the {@link #guildComboBox}.
+     */
     private void updateGuildComboBox() {
         ComboBoxEntry oldEntry = guildComboBox.getValue();
 
@@ -280,8 +352,11 @@ public class StrawPollController implements FXMLController {
                 }
             }
         }
-    } // method updateGuildComboBox
+    }
 
+    /**
+     * Updates the list of {@link Channel}s in the {@link #channelComboBox}.
+     */
     private void updateChannelComboBox() {
         ComboBoxEntry oldEntry = channelComboBox.getValue();
 
@@ -296,33 +371,22 @@ public class StrawPollController implements FXMLController {
                 }
             }
         }
-    } // method updateChannelComboBox
+    }
 
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        // add two options (the minimum);
-        addOption();
-        addOption();
-
-        updateGuildComboBox();
-        updateChannelComboBox();
-        guildComboBox.setOnAction(e -> updateChannelComboBox());
-
-        statusListener = new StatusListener();
-        DiscordBot.getInstance().addEventListener(statusListener);
-    } // method initialize
-
-    @Override
-    public void stop() {
-        DiscordBot.getInstance().removeEventListener(statusListener);
-        stopListening();
-    } // method stop
-
+    /**
+     * Sets the {@link ResizeListener}.
+     *
+     * @param listener The {@link ResizeListener} to set.
+     */
     @Override
     public void setResizeListener(ResizeListener listener) {
         resizeListener = listener;
     }
 
+    /**
+     * An entry for a {@link ComboBox} with an id and name. The name is displayed in the {@link ComboBox}. ComboBoxEntry
+     * is used by {@link #guildComboBox} and {@link #channelComboBox}.
+     */
     private class ComboBoxEntry {
 
         private String id;
@@ -331,37 +395,41 @@ public class StrawPollController implements FXMLController {
         ComboBoxEntry(String id, String name) {
             this.id = id;
             this.name = name;
-        } // constructor
+        }
 
         String getId() {
             return id;
-        } // method getId
+        }
 
         @Override
         public String toString() {
             return name;
         }
-    } // class ComboBoxEntry
+    }
 
+    /**
+     * A {@link ListenerAdapter} implementation that updates the {@link #guildComboBox} and {@link #channelComboBox}
+     * when the {@link net.dv8tion.jda.core.JDA} reconnects.
+     */
     private class StatusListener extends ListenerAdapter {
 
         @Override
         public void onReady(ReadyEvent event) {
             callUpdates();
-        } // method onReady
+        }
 
         @Override
         public void onResume(ResumedEvent event) {
             callUpdates();
-        } // method onResume
+        }
 
         private void callUpdates() {
             Platform.runLater(() -> {
                 updateGuildComboBox();
                 updateChannelComboBox();
             });
-        } // method callUpdates
+        }
 
-    } // class StatusListener
+    }
 
-} // class StrawPollController
+}

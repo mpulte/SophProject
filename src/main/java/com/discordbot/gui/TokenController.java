@@ -3,7 +3,7 @@ package com.discordbot.gui;
 import com.discordbot.DiscordBot;
 import com.discordbot.model.Token;
 import com.discordbot.sql.TokenDB;
-import com.discordbot.util.SettingsManager;
+import com.discordbot.util.SettingHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -20,16 +20,24 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * A {@link FXMLController} implementation for controlling TokenPane.fxml.
+ *
+ * @see FXMLController
+ */
 public class TokenController implements FXMLController {
+
+    /**
+     * The key to use for the token setting
+     */
+    public static final String TOKEN_SETTING = "token";
 
     private static SimpleLog LOG = SimpleLog.getLog("TokenController");
 
-    public static final String TOKEN_SETTING = "token";
-
     @FXML
-    public GridPane gridPane;
+    private GridPane gridPane;
     @FXML
-    public Button addButton;
+    private Button addButton;
 
     private TokenDB database = new TokenDB();
     private ResizeListener resizeListener = null;
@@ -40,25 +48,64 @@ public class TokenController implements FXMLController {
 
     private int selectedRow = -1;
 
+    /**
+     * Initializes the TokenController. Calls {@link #loadTokens()}.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or <tt>null</tt> if the
+     *                  location is not known.
+     * @param resources The resources used to localize the root object, or <tt>null</tt> if the root object was not
+     *                  localized.
+     * @see javafx.fxml.Initializable#initialize(URL, ResourceBundle)
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        loadTokens();
+    }
+
+    /**
+     * Not implemented
+     */
+    @Override
+    public void stop() {
+    }
+
+    /**
+     * Handles save button clicks. Calls {@link #saveTokens()}.
+     */
     @FXML
     public void handleSaveButton() {
         saveTokens();
     }
 
+    /**
+     * Handles save button clicks. Calls {@link #loadTokens()}.
+     */
     @FXML
     public void handleRevertButton() {
         loadTokens();
     }
 
+    /**
+     * Handles add button clicks. Calls {@link #addToken()}.
+     */
     @FXML
     public void handleAddButton() {
         addToken();
     }
 
+    /**
+     * Adds a new blank row for setting a token.
+     */
     private void addToken() {
         addToken(new Token("", ""), false);
     }
 
+    /**
+     * Adds a new row for a token.
+     *
+     * @param token    The {@link Token} to use to set the value of the name field and token field added.
+     * @param selected The truth value for the selection of the check box added.
+     */
     private void addToken(Token token, boolean selected) {
         final int row = GridPane.getRowIndex(addButton);
 
@@ -102,6 +149,11 @@ public class TokenController implements FXMLController {
         }
     }
 
+    /**
+     * Removes a row for a token.
+     *
+     * @param row The row to remove.
+     */
     private void removeToken(int row) {
         List<Node> toRemove = new ArrayList<>();
         List<Node> toMove = new ArrayList<>();
@@ -165,6 +217,12 @@ public class TokenController implements FXMLController {
         }
     }
 
+    /**
+     * Accessor for the list of tokens. The list excludes rows with empty token values and includes rows with empty name
+     * values.
+     *
+     * @return the list of {@link Token}s.
+     */
     private List<Token> getTokens() {
         List<Token> tokens = new ArrayList<>();
         for (int i = 0; i < tokenFields.size(); ++i) {
@@ -179,11 +237,14 @@ public class TokenController implements FXMLController {
         return tokens;
     }
 
+    /**
+     * Loads the saved {@link Token}s from {@link TokenDB} and the token setting from {@link SettingHandler}.
+     */
     private void loadTokens() {
         // load selected token setting
         String setting;
         try {
-            setting = SettingsManager.getString(TOKEN_SETTING);
+            setting = SettingHandler.getString(TOKEN_SETTING);
         } catch (InvalidKeyException e) {
             setting = "";
         }
@@ -211,6 +272,9 @@ public class TokenController implements FXMLController {
         }
     }
 
+    /**
+     * Saves the {@link Token}s to {@link TokenDB} and the token setting to {@link SettingHandler}.
+     */
     private void saveTokens() {
         List<Token> tokens = getTokens();
 
@@ -234,7 +298,7 @@ public class TokenController implements FXMLController {
                 ? tokenFields.get(selectedRow).getText() : "";
         try {
             if (!token.isEmpty() && DiscordBot.getInstance().isRunning()
-                    && !token.equals(SettingsManager.getString(TOKEN_SETTING))) {
+                    && !token.equals(SettingHandler.getString(TOKEN_SETTING))) {
                 DiscordBot.getInstance().reboot(token);
             }
         } catch (InvalidKeyException e) {
@@ -242,18 +306,14 @@ public class TokenController implements FXMLController {
         }
 
         // save selected token setting
-        SettingsManager.setString(TOKEN_SETTING, token);
+        SettingHandler.setString(TOKEN_SETTING, token);
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        loadTokens();
-    }
-
-    @Override
-    public void stop() {
-    }
-
+    /**
+     * Sets the {@link ResizeListener}.
+     *
+     * @param listener The {@link ResizeListener} to set.
+     */
     @Override
     public void setResizeListener(ResizeListener listener) {
         resizeListener = listener;

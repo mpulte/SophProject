@@ -1,41 +1,73 @@
 package com.discordbot.util;
 
+import com.discordbot.command.CommandListener;
+import com.discordbot.command.CommandReceivedEvent;
 import com.discordbot.model.ProfanityFilter;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.security.InvalidKeyException;
-import java.util.Collection;
+import java.util.List;
 
+/**
+ * An implementation of {@link ListenerAdapter} that filters {@link MessageReceivedEvent}s for profanity and removes
+ * offending {@link Message}s.
+ *
+ * @see ListenerAdapter
+ */
 public class ProfanityFilterListener extends ListenerAdapter {
 
-    public static final String SETTING_REPLY_GUILD = "profanity_filter_reply_guild"; // TODO: Save setting
-    public static final String SETTING_REPLY_PRIVATE = "profanity_filter_reply_private"; // TODO: Save setting
+    /**
+     * The key to use for the ProfanityFilterListener's reply guild setting
+     */
+    public static final String SETTING_REPLY_GUILD = "profanity_filter_reply_guild";
+    /**
+     * The key to use for the ProfanityFilterListener's reply private setting
+     */
+    public static final String SETTING_REPLY_PRIVATE = "profanity_filter_reply_private";
+
+    private static final SimpleLog LOG = SimpleLog.getLog("ProfanityFilterListener");
 
     private ProfanityFilter filter;
 
+    /**
+     * @param filter The {@link ProfanityFilter} to use for filtering messages.
+     */
     public ProfanityFilterListener(ProfanityFilter filter) {
         this.filter = filter;
     }
 
+    /**
+     * Handles a {@link MessageReceivedEvent} by creating a {@link CommandReceivedEvent} and pushing it to the
+     * registered {@link CommandListener}s.
+     *
+     * @param event The {@link MessageReceivedEvent} to handle.
+     */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getChannelType().equals(ChannelType.TEXT)) {
             Message message = event.getMessage();
             User author = event.getAuthor();
 
-            Collection<String> words = filter.filter(message.getContent());
+            List<String> words = filter.filter(message.getContent());
             if (!words.isEmpty()) {
                 // delete the message
-                message.delete().queue();
+                try {
+                    message.delete().queue();
+                } catch (PermissionException | IllegalStateException e) {
+                    LOG.warn(e.getMessage());
+                    return;
+                }
 
                 // reply in guild if enabled
                 try {
-                    if (SettingsManager.getBoolean(SETTING_REPLY_GUILD)) {
+                    if (SettingHandler.getBoolean(SETTING_REPLY_GUILD)) {
                         event.getChannel().sendMessage(
                                 new MessageBuilder()
                                         .append("Message from ")
@@ -45,12 +77,12 @@ public class ProfanityFilterListener extends ListenerAdapter {
                                 .queue();
                     }
                 } catch (InvalidKeyException e) {
-                    SettingsManager.setBoolean(SETTING_REPLY_GUILD, false);
+                    SettingHandler.setBoolean(SETTING_REPLY_GUILD, false);
                 }
 
                 // reply in private if enabled
                 try {
-                    if (SettingsManager.getBoolean(SETTING_REPLY_PRIVATE)) {
+                    if (SettingHandler.getBoolean(SETTING_REPLY_PRIVATE)) {
                         MessageBuilder messageBuilder = new MessageBuilder();
                         messageBuilder.append(words.size() > 1 ? "The words " : "The word ");
                         words.forEach(word -> messageBuilder.append(word).append(" "));
@@ -73,7 +105,7 @@ public class ProfanityFilterListener extends ListenerAdapter {
                         }
                     }
                 } catch (InvalidKeyException e) {
-                    SettingsManager.setBoolean(SETTING_REPLY_PRIVATE, false);
+                    SettingHandler.setBoolean(SETTING_REPLY_PRIVATE, false);
                 }
             }
         }

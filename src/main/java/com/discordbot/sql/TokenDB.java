@@ -9,6 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A {@link SQLiteDatabase} for querying the Token Database.
+ *
+ * @see SQLiteDatabase
+ */
 public class TokenDB extends SQLiteDatabase<Token, String> {
 
     private static final int DB_VERSION = 1;
@@ -22,31 +27,52 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
     private static final String CREATE_TABLE_TOKEN =
             "CREATE TABLE IF NOT EXISTS " + TOKEN + " (" +
                     TOKEN_TOKEN + " TEXT  NOT NULL  PRIMARY KEY, " +
-                    TOKEN_NAME  + " TEXT  NOT NULL);";
+                    TOKEN_NAME + " TEXT);";
 
     // drop table statement
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TOKEN;
 
+    /**
+     * Default constructor
+     */
     public TokenDB() {
         super(DB_VERSION);
-    } // constructor
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be created.
+     */
     @Override
     protected void onCreate() {
         query(CREATE_TABLE_TOKEN);
-    } // method onCreate
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be destroyed.
+     */
     @Override
     protected void onDestroy() {
         query(DROP_TABLE);
-    }  // method onDestroy
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database version has increased.
+     *
+     * @param oldVersion The previous version of the SettingDB.
+     * @param newVersion The new version of the SettingDB.
+     */
     @Override
     protected void onUpgrade(int oldVersion, int newVersion) {
         onReset();
         LOG.info("Upgrading TokenDB from version " + oldVersion + " to " + newVersion);
-    } // method onReset
+    }
 
+    /**
+     * Selects a {@link Token}.
+     *
+     * @param token The token of the {@link Token} to select.
+     * @return the {@link Token} or null if no such {@link Token} exists.
+     */
     @Override
     public Token select(String token) {
         Connection connection = connectionPool.getConnection();
@@ -75,8 +101,13 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Selects all {@link Token}s.
+     *
+     * @return a {@link List<Token>}.
+     */
     @Override
     public List<Token> selectAll() {
         Connection connection = connectionPool.getConnection();
@@ -105,10 +136,16 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Inserts one or more {@link Token}.
+     *
+     * @param tokens The {@link Token}s to insert.
+     * @return the number of {@link Token}s inserted.
+     */
     @Override
-    public int insert(Token...tokens) {
+    public int insert(Token... tokens) {
         String query = "INSERT INTO " + TOKEN +
                 " (" + TOKEN_TOKEN + "," + TOKEN_NAME + ")" +
                 "VALUES (?,?)";
@@ -118,10 +155,16 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             result += query(query, token.getToken(), token.getName());
         }
         return result;
-    } // method insert
+    }
 
+    /**
+     * Updates one or more {@link Token}.
+     *
+     * @param tokens The {@link Token}s to update.
+     * @return the number of {@link Token}s updated.
+     */
     @Override
-    public int update(Token...tokens) {
+    public int update(Token... tokens) {
         String query = "UPDATE " + TOKEN + " SET " + TOKEN_NAME + " = ?" + " WHERE " + TOKEN_TOKEN + " = ?";
 
         int result = 0;
@@ -129,12 +172,16 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             result += query(query, token.getName(), token.getToken());
         }
         return result;
-    } // method update
+    }
 
-
-
+    /**
+     * Deletes one or more {@link Token}.
+     *
+     * @param tokens The tokens of the {@link Token}s to delete.
+     * @return the number of {@link Token}s deleted.
+     */
     @Override
-    public int delete(String...tokens) {
+    public int delete(String... tokens) {
         String query = "DELETE FROM " + TOKEN + " WHERE " + TOKEN_TOKEN + " = ?";
 
         int result = 0;
@@ -142,8 +189,14 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             result += query(query, token);
         }
         return result;
-    } // method delete
+    }
 
+    /**
+     * Checks if a {@link Token} of a given token exists.
+     *
+     * @param token The token of the {@link Token}.
+     * @return <tt>true</tt> if a {@link Token} exists, <tt>false</tt> otherwise.
+     */
     @Override
     public boolean exists(String token) {
         Connection connection = connectionPool.getConnection();
@@ -169,5 +222,6 @@ public class TokenDB extends SQLiteDatabase<Token, String> {
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method exists
+    }
+
 }

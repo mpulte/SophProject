@@ -1,7 +1,7 @@
 package com.discordbot.gui;
 
 import com.discordbot.DiscordBot;
-import com.discordbot.util.SettingsManager;
+import com.discordbot.util.SettingHandler;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.InvalidKeyException;
 
+/**
+ * A JavaFX {@link javafx.scene.layout.Pane Pane} used to start and pause the {@link DiscordBot DiscordBot).
+ */
 public class ControlPane extends HBox {
 
     private static final SimpleLog LOG = SimpleLog.getLog("StageHandler");
@@ -25,6 +28,9 @@ public class ControlPane extends HBox {
     private Pane statusPane;
     private Button startStopButton;
 
+    /**
+     * Default constructor builds the ControlPane.
+     */
     public ControlPane() {
         DiscordBot.getInstance().addEventListener(new StatusListener());
 
@@ -33,8 +39,8 @@ public class ControlPane extends HBox {
         statusPane.setPrefSize(25, 25);
         statusPane.setStyle("-fx-background-color: #" + (
                 DiscordBot.getInstance().isRunning()
-                ? DiscordBot.getInstance().getJDA().getStatus() == JDA.Status.CONNECTED ? "00ff00" : "ffff00"
-                : "ff0000"));
+                        ? DiscordBot.getInstance().getJDA().getStatus() == JDA.Status.CONNECTED ? "00ff00" : "ffff00"
+                        : "ff0000"));
 
         // set up start/stop button
         startStopButton = new Button("Start");
@@ -42,7 +48,7 @@ public class ControlPane extends HBox {
             DiscordBot bot = DiscordBot.getInstance();
             if (!bot.isRunning()) {
                 try {
-                    String token = SettingsManager.getString(TokenController.TOKEN_SETTING);
+                    String token = SettingHandler.getString(TokenController.TOKEN_SETTING);
                     if (token.equals("")) {
                         throw new InvalidKeyException("Token not set");
                     }
@@ -72,6 +78,10 @@ public class ControlPane extends HBox {
         getChildren().add(startStopButton);
     } // constructor
 
+    /**
+     * A {@link ListenerAdapter ListenerAdapter} used to update the color of the {@link Pane Pane} to indicate the
+     * status of the {@link JDA JDA} used byt {@link DiscordBot DiscordBot}.
+     */
     private class StatusListener extends ListenerAdapter {
 
         @Override
@@ -83,6 +93,7 @@ public class ControlPane extends HBox {
         public void onResume(ResumedEvent event) {
             Platform.runLater(() -> statusPane.setStyle("-fx-background-color: #00ff00"));
         } // method onResume
+
         @Override
         public void onDisconnect(DisconnectEvent event) {
             Platform.runLater(() -> statusPane.setStyle("-fx-background-color: #ffff00"));
