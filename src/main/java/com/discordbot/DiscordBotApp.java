@@ -1,9 +1,7 @@
 package com.discordbot;
 
 import com.discordbot.command.*;
-import com.discordbot.gui.FXMLController;
-import com.discordbot.gui.ProfanityFilterController;
-import com.discordbot.gui.StageHandler;
+import com.discordbot.gui.*;
 import com.discordbot.model.ProfanityFilter;
 import com.discordbot.sql.CommandDB;
 import com.discordbot.util.IOUtils;
@@ -118,7 +116,7 @@ public class DiscordBotApp extends Application {
             DiscordBot.getInstance().addEventListener(profanityFilterListener);
         }
 
-        // change listener for turning on and off profanity filter listener
+        // set up change listener for profanity filter enabled setting
         try {
             final boolean profanityFilterEnabled = SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED);
             SettingHandler.addBooleanChangeListener(new SettingHandler.ChangeListener<Boolean>() {
@@ -138,11 +136,31 @@ public class DiscordBotApp extends Application {
                         }
                     }
                 }
-
             });
         } catch (InvalidKeyException e) {
             LOG.warn("This should never be reached!");
             LOG.log(e);
+        }
+
+        // set up change listener for token setting
+        try {
+            final String initialToken = SettingHandler.getString(TokenController.TOKEN_SETTING);
+            SettingHandler.addStringChangeListener(new SettingHandler.ChangeListener<String>() {
+
+                String token = initialToken;
+
+                @Override
+                public void onChange(String key, String value) {
+                    // reboot bot if token changed
+                    if (key.equals(TokenController.TOKEN_SETTING) && DiscordBot.getInstance().isRunning()
+                            && !value.isEmpty() && !value.equals(token)) {
+                        DiscordBot.getInstance().reboot(value);
+                        token = value;
+                    }
+                }
+            });
+        } catch (InvalidKeyException e) {
+            LOG.warn(e.getMessage());
         }
     }
 

@@ -1,6 +1,5 @@
 package com.discordbot.gui;
 
-import com.discordbot.DiscordBot;
 import com.discordbot.model.Token;
 import com.discordbot.sql.TokenDB;
 import com.discordbot.util.SettingHandler;
@@ -11,7 +10,6 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
-import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.net.URL;
 import java.security.InvalidKeyException;
@@ -31,8 +29,6 @@ public class TokenController implements FXMLController {
      * The key to use for the token setting
      */
     public static final String TOKEN_SETTING = "token";
-
-    private static SimpleLog LOG = SimpleLog.getLog("TokenController");
 
     @FXML
     private GridPane gridPane;
@@ -293,19 +289,9 @@ public class TokenController implements FXMLController {
             }
         });
 
-        // reboot bot with new token
+        // save selected token setting
         String token = (selectedRow != -1 && tokenFields.size() > selectedRow)
                 ? tokenFields.get(selectedRow).getText() : "";
-        try {
-            if (!token.isEmpty() && DiscordBot.getInstance().isRunning()
-                    && !token.equals(SettingHandler.getString(TOKEN_SETTING))) {
-                DiscordBot.getInstance().reboot(token);
-            }
-        } catch (InvalidKeyException e) {
-            LOG.warn(e.getMessage());
-        }
-
-        // save selected token setting
         SettingHandler.setString(TOKEN_SETTING, token);
     }
 
