@@ -114,6 +114,7 @@ public class DiscordBotApp extends Application {
         List<CommandSetting> defaults = new ArrayList<>();
         defaults.add(new CommandSetting(HelpCommand.class, "help", false));
         defaults.add(new CommandSetting(KickCommand.class, "kick", false));
+        defaults.add(new CommandSetting(BanCommand.class, "ban", false));
         defaults.add(new CommandSetting(RollCommand.class, "roll", false));
         defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
         defaults.add(new CommandSetting(WikipediaCommand.class, "wiki", false));
