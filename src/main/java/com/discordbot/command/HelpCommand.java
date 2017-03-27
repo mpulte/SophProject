@@ -3,7 +3,7 @@ package com.discordbot.command;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * A {@link CommandListener} for handling the help command.
@@ -36,7 +36,9 @@ public class HelpCommand extends CommandListener {
             Map<String, CommandListener> commands = getHandler().getCommandListeners();
 
             MessageBuilder builder = new MessageBuilder();
-            for (String key : commands.keySet()) {
+            List<String> keys = new LinkedList<>(commands.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
                 builder.append(CommandReceivedEvent.PREFIX)
                         .append(key).append('\t')
                         .append(commands.get(key).getDescription())
@@ -47,7 +49,6 @@ public class HelpCommand extends CommandListener {
                 channel.sendMessage(builder.build()).queue();
             }
         } else {
-            int count = 0;
             for (String argument : event.getArgs()) {
                 if (getHandler().isTag(argument)) {
                     CommandListener command = getHandler().getCommandListeners().get(argument);
