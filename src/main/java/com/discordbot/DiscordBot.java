@@ -24,16 +24,16 @@ public class DiscordBot {
 
     private JDA jda;
     private CommandHandler commandHandler;
-
     private Map<Class<? extends EventListener>, EventListener> listeners;
-    private boolean canRestart;
+
+    private boolean canRestart = true;
+    private boolean running = false;
 
     /**
      * Default constructor is private for singleton class.
      */
     private DiscordBot() {
         listeners = new HashMap<>();
-        canRestart = true;
         commandHandler = new CommandHandler();
         addEventListener(commandHandler);
     }
@@ -65,10 +65,8 @@ public class DiscordBot {
      * @return <tt>true</tt> if the {@link JDA} is running, <tt>false</tt> if the {@link JDA} was paused, shutdown, or
      * not yet initialized.
      */
-    public synchronized boolean isRunning() {
-        return jda != null
-                && jda.getStatus() != JDA.Status.SHUTDOWN
-                && jda.getStatus() != JDA.Status.SHUTTING_DOWN;
+    public boolean isRunning() {
+        return running;
     }
 
     /**
@@ -84,10 +82,11 @@ public class DiscordBot {
         }
 
         // make sure bot isn't running
-        if (!isRunning()) {
+        if (!running) {
             try {
                 jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
                 jda.setAutoReconnect(true);
+                running = true;
             } catch (LoginException e) {
                 LOG.warn("JDA login failed");
             } catch (IllegalArgumentException | InterruptedException | RateLimitedException e) {
@@ -105,8 +104,9 @@ public class DiscordBot {
      * @return the DiscordBot instance.
      */
     public synchronized DiscordBot pause() {
-        if (isRunning()) {
+        if (running) {
             jda.shutdown(false);
+            running = false;
         }
         return this;
     }
@@ -120,6 +120,7 @@ public class DiscordBot {
         if (jda != null && canRestart) {
             jda.shutdown();
             canRestart = false;
+            running = false;
         }
         return this;
     }
@@ -131,8 +132,8 @@ public class DiscordBot {
      * @return the DiscordBot instance.
      */
     public synchronized DiscordBot reboot(String token) {
-        if (jda != null) {
-            jda.shutdown(false);
+        if (running) {
+            pause();
         }
         start(token);
         return this;
