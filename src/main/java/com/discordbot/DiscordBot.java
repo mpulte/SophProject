@@ -60,7 +60,7 @@ public class DiscordBot {
     }
 
     /**
-     * Checks if the {@link JDA}.
+     * Checks if the {@link JDA} is running.
      *
      * @return <tt>true</tt> if the {@link JDA} is running, <tt>false</tt> if the {@link JDA} was paused, shutdown, or
      * not yet initialized.
