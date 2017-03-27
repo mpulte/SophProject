@@ -125,7 +125,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + COMMAND;
+        String query = "SELECT * FROM " + COMMAND + " ORDER BY " + COMMAND_CLASS;
 
         try {
             statement = connection.prepareStatement(query);

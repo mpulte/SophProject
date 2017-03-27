@@ -118,7 +118,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + SETTING;
+        String query = "SELECT * FROM " + SETTING + " ORDER BY " + SETTING_KEY;
 
         try {
             statement = connection.prepareStatement(query);
