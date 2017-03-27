@@ -54,7 +54,7 @@ public final class IOUtils {
 
                 path = Paths.get(RESOURCE_FOLDER_DEFAULT);
                 //noinspection ResultOfMethodCallIgnored
-                path.toFile().mkdir();
+                path.toFile().mkdirs();
             }
         } catch (InvalidKeyException e) {
             // the resource folder setting wasn't set, set the setting to the default path and use that path
