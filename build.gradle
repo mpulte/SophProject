@@ -24,4 +24,5 @@ dependencies {
     compile 'commons-io:commons-io:2.5'
     compile 'org.xerial:sqlite-jdbc:3.16.1'
     compile 'org.controlsfx:controlsfx:8.40.12'
+    compile 'org.reflections:reflections:0.9.11'
 }

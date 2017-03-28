@@ -10,6 +10,7 @@ import java.util.*;
  *
  * @see CommandListener
  */
+@Command(tag = "help", enabled = true)
 public class HelpCommand extends CommandListener {
 
     /**

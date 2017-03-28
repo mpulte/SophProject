@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.exceptions.PermissionException;
  *
  * @see CommandListener
  */
+@Command(tag = "kick")
 public class KickCommand extends CommandListener {
 
     /**

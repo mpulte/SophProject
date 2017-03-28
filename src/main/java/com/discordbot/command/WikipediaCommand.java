@@ -16,6 +16,7 @@ import java.io.IOException;
  *
  * @see CommandListener
  */
+@Command(tag = "wiki")
 public class WikipediaCommand extends CommandListener {
 
     private static final SimpleLog LOG = SimpleLog.getLog("WikipediaCommand");

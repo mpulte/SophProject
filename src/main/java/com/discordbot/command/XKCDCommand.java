@@ -18,6 +18,7 @@ import java.util.ArrayList;
  *
  * @see CommandListener
  */
+@Command(tag = "xkcd")
 public class XKCDCommand extends CommandListener {
 
     /**

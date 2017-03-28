@@ -172,14 +172,8 @@ public class DiscordBotApp extends Application {
      * in the database, the default values will be inserted in the database.
      */
     private void loadCommands() {
-        List<CommandSetting> defaults = new ArrayList<>();
-        defaults.add(new CommandSetting(HelpCommand.class, "help", false));
-        defaults.add(new CommandSetting(KickCommand.class, "kick", false));
-        defaults.add(new CommandSetting(BanCommand.class, "ban", false));
-        defaults.add(new CommandSetting(RollCommand.class, "roll", false));
-        defaults.add(new CommandSetting(EightBallCommand.class, "8ball", false));
-        defaults.add(new CommandSetting(WikipediaCommand.class, "wiki", false));
-        defaults.add(new CommandSetting(XKCDCommand.class, "xkcd", false));
+        // use CommandLoader to load annotated commands
+        List<CommandSetting> defaults = new CommandLoader("com.discordbot").getCommandSettings();
 
         // load each command that is listed in defaults
         CommandDB database = new CommandDB();

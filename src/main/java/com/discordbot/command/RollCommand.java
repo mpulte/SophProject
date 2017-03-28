@@ -10,6 +10,7 @@ import java.util.Random;
  *
  * @see CommandListener
  */
+@Command(tag = "roll")
 public class RollCommand extends CommandListener {
 
     private static final int DEFAULT = 100;

@@ -14,6 +14,7 @@ import java.util.*;
  *
  * @see CommandListener
  */
+@Command(tag = "8ball")
 public class EightBallCommand extends CommandListener {
 
     private static final SimpleLog LOG = SimpleLog.getLog("EightBallCommand");
