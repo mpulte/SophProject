@@ -60,9 +60,8 @@ public class CommandReceivedEvent {
             if (arg.startsWith("\"") && arg.startsWith("\"") && arg.length() > 1) {
                 arg = arg.substring(1, arg.length() - 1);
             }
-
+            
             args.add(arg);
-            System.out.println(arg);
         }
         return new CommandReceivedEvent(event, command, args);
     }
