@@ -1,6 +1,7 @@
 package com.discordbot;
 
-import com.discordbot.command.*;
+import com.discordbot.command.CommandLoader;
+import com.discordbot.command.CommandSetting;
 import com.discordbot.gui.FXMLController;
 import com.discordbot.gui.ProfanityFilterController;
 import com.discordbot.gui.StageHandler;
@@ -28,7 +29,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +48,7 @@ public class DiscordBotApp extends Application {
     @FXML
     private MenuItem strawPollMenuItem;
 
-    private ProfanityFilter profanityFilter = new ProfanityFilter();
+    private ProfanityFilter profanityFilter = DiscordBot.getInstance().getProfanityFilter();
 
     /**
      * Starts DiscordBotApp
@@ -112,34 +112,38 @@ public class DiscordBotApp extends Application {
             // use enabled setting
             if (SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED)) {
                 DiscordBot.getInstance().addEventListener(profanityFilterListener);
+                DiscordBot.getInstance().getCommandHandler().enableProfanityFilter(true);
             }
         } catch (InvalidKeyException e) {
             // default is enabled
             SettingHandler.setBoolean(ProfanityFilterListener.SETTING_ENABLED, true);
             DiscordBot.getInstance().addEventListener(profanityFilterListener);
+            DiscordBot.getInstance().getCommandHandler().enableProfanityFilter(true);
         }
 
         // set up change listener for profanity filter enabled setting
         try {
             final boolean profanityFilterEnabled = SettingHandler.getBoolean(ProfanityFilterListener.SETTING_ENABLED);
-            SettingHandler.addBooleanChangeListener(new SettingHandler.ChangeListener<Boolean>() {
+            SettingHandler.addBooleanChangeListener(
+                    new SettingHandler.ChangeListener<Boolean>() {
 
-                boolean enabled = profanityFilterEnabled;
+                        private boolean enabled = profanityFilterEnabled;
 
-                @Override
-                public void onChange(String key, Boolean value) {
-                    if (key.equals(ProfanityFilterListener.SETTING_ENABLED)) {
-                        if (value && !enabled) {
-                            DiscordBot.getInstance().addEventListener(profanityFilterListener);
-                            enabled = true;
-
-                        } else if (!value && enabled) {
-                            DiscordBot.getInstance().removeEventListener(profanityFilterListener);
-                            enabled = false;
+                        @Override
+                        public void onChange(String key, Boolean value) {
+                            if (key.equals(ProfanityFilterListener.SETTING_ENABLED)) {
+                                if (value && !enabled) {
+                                    DiscordBot.getInstance().addEventListener(profanityFilterListener);
+                                    DiscordBot.getInstance().getCommandHandler().enableProfanityFilter(true);
+                                    enabled = true;
+                                } else if (!value && enabled) {
+                                    DiscordBot.getInstance().removeEventListener(profanityFilterListener);
+                                    DiscordBot.getInstance().getCommandHandler().enableProfanityFilter(false);
+                                    enabled = false;
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
         } catch (InvalidKeyException e) {
             LOG.warn("This should never be reached!");
             LOG.log(e);
@@ -148,20 +152,21 @@ public class DiscordBotApp extends Application {
         // set up change listener for token setting
         try {
             final String initialToken = SettingHandler.getString(TokenController.TOKEN_SETTING);
-            SettingHandler.addStringChangeListener(new SettingHandler.ChangeListener<String>() {
+            SettingHandler.addStringChangeListener(
+                    new SettingHandler.ChangeListener<String>() {
 
-                String token = initialToken;
+                        private String token = initialToken;
 
-                @Override
-                public void onChange(String key, String value) {
-                    // reboot bot if token changed
-                    if (key.equals(TokenController.TOKEN_SETTING) && DiscordBot.getInstance().isRunning()
-                            && !value.isEmpty() && !value.equals(token)) {
-                        DiscordBot.getInstance().reboot(value);
-                        token = value;
-                    }
-                }
-            });
+                        @Override
+                        public void onChange(String key, String value) {
+                            // reboot bot if token changed
+                            if (key.equals(TokenController.TOKEN_SETTING) && DiscordBot.getInstance().isRunning()
+                                    && !value.isEmpty() && !value.equals(token)) {
+                                DiscordBot.getInstance().reboot(value);
+                                token = value;
+                            }
+                        }
+                    });
         } catch (InvalidKeyException e) {
             LOG.warn(e.getMessage());
         }

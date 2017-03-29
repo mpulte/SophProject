@@ -1,5 +1,6 @@
 package com.discordbot.command;
 
+import com.discordbot.model.ProfanityFilter;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.SimpleLog;
@@ -18,7 +19,14 @@ public class CommandHandler extends ListenerAdapter {
 
     private static final SimpleLog LOG = SimpleLog.getLog("ComHandler");
 
-    private Map<String, CommandListener> listeners = new HashMap<>();
+    private final Map<String, CommandListener> listeners = new HashMap<>();
+    private final ProfanityFilter profanityFilter;
+
+    private boolean profanityFilterEnabled = false;
+
+    public CommandHandler(ProfanityFilter profanityFilter) {
+        this.profanityFilter = profanityFilter;
+    }
 
     /**
      * Adds provided {@link CommandListener} to the listeners that will be used to handle {@link CommandReceivedEvent}.
@@ -91,6 +99,15 @@ public class CommandHandler extends ListenerAdapter {
     }
 
     /**
+     * Accessor for a {@link Map} of the registered {@link CommandListener}.
+     *
+     * @return A {@link Map} of the registered {@link CommandListener}
+     */
+    public Map<String, CommandListener> getCommandListeners() {
+        return new HashMap<>(listeners);
+    }
+
+    /**
      * Checks if a tag is in use.
      *
      * @param tag The tag to check.
@@ -101,12 +118,15 @@ public class CommandHandler extends ListenerAdapter {
     }
 
     /**
-     * Accessor for a {@link Map} of the registered {@link CommandListener}.
+     * Enables/disables the {@link ProfanityFilter} when parsing {@link MessageReceivedEvent}s.
      *
-     * @return A {@link Map} of the registered {@link CommandListener}
+     * @param enabled <tt>true</tt> to enable the {@link ProfanityFilter}, <tt>false</tt> to disable the {@link
+     *                ProfanityFilter}.
+     * @return A reference to this CommandHandler.
      */
-    public Map<String, CommandListener> getCommandListeners() {
-        return new HashMap<>(listeners);
+    public CommandHandler enableProfanityFilter(boolean enabled) {
+        profanityFilterEnabled = enabled;
+        return this;
     }
 
     /**
@@ -118,7 +138,8 @@ public class CommandHandler extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getMessage().getContent().startsWith(CommandReceivedEvent.PREFIX)
-                && !event.getAuthor().isBot()) {
+                && !event.getAuthor().isBot()
+                && (!profanityFilterEnabled || profanityFilter.filter(event.getMessage().getContent()).isEmpty())) {
             CommandReceivedEvent commandEvent = CommandReceivedEvent.buildCommand(event);
             for (Map.Entry<String, CommandListener> entry : listeners.entrySet()) {
                 if (commandEvent.getTag().equals(entry.getKey())

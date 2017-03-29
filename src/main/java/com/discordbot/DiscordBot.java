@@ -1,6 +1,7 @@
 package com.discordbot;
 
 import com.discordbot.command.CommandHandler;
+import com.discordbot.model.ProfanityFilter;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -21,10 +22,13 @@ public class DiscordBot {
 
     private static DiscordBot instance;
 
+    private final ProfanityFilter profanityFilter = new ProfanityFilter();
+    private final CommandHandler commandHandler = new CommandHandler(profanityFilter);
+
+    private final Map<Class<? extends EventListener>, EventListener> eventListeners = new HashMap<>();
+    private final List<ChangeListener> changeListeners = new ArrayList<>();
+
     private JDA jda;
-    private CommandHandler commandHandler;
-    private Map<Class<? extends EventListener>, EventListener> eventListeners;
-    private List<ChangeListener> changeListeners;
 
     private boolean canRestart = true;
     private boolean running = false;
@@ -33,9 +37,6 @@ public class DiscordBot {
      * Default constructor is private for singleton class.
      */
     private DiscordBot() {
-        eventListeners = new HashMap<>();
-        changeListeners = new ArrayList<>();
-        commandHandler = new CommandHandler();
         addEventListener(commandHandler);
     }
 
@@ -217,6 +218,15 @@ public class DiscordBot {
      */
     public CommandHandler getCommandHandler() {
         return commandHandler;
+    }
+
+    /**
+     * Accessor for the {@link ProfanityFilter}.
+     *
+     * @return the {@link ProfanityFilter}.
+     */
+    public ProfanityFilter getProfanityFilter() {
+        return profanityFilter;
     }
 
     /**
