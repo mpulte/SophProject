@@ -84,13 +84,15 @@ public class DiscordBot {
         // make sure bot isn't running
         if (!running) {
             try {
+                running = true;
                 jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
                 jda.setAutoReconnect(true);
-                running = true;
             } catch (LoginException e) {
                 LOG.warn("JDA login failed");
+                running = false;
             } catch (IllegalArgumentException | InterruptedException | RateLimitedException e) {
                 LOG.log(e);
+                running = false;
             }
         } else {
             LOG.warn("JDA already running");

@@ -172,39 +172,47 @@ public class DiscordBotApp extends Application {
      * in the database, the default values will be inserted in the database.
      */
     private void loadCommands() {
-        // use CommandLoader to load annotated commands
-        List<CommandSetting> defaults = new CommandLoader("com.discordbot").getCommandSettings();
+        new Thread(() -> {
+            // use CommandLoader to load annotated commands
+            List<CommandSetting> defaults = new CommandLoader("com.discordbot").getCommandSettings();
 
-        // load each command that is listed in defaults
-        CommandDB database = new CommandDB();
-        for (CommandSetting defaultSetting : defaults) {
-            CommandSetting savedSetting = database.select(defaultSetting.getCls());
-            if (savedSetting == null) {
-                if (defaultSetting.isEnabled()) {
-                    DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
-                }
-                database.insert(defaultSetting);
-            } else if (savedSetting.isEnabled()) {
-                DiscordBot.getInstance().getCommandHandler().setCommandListener(savedSetting);
-                if (!savedSetting.isEnabled()) {
-                    database.update(savedSetting);
-                }
-            }
-        }
+            // load each command that is listed in defaults
+            CommandDB database = new CommandDB();
+            for(
+            CommandSetting defaultSetting :defaults)
 
-        // remove commands not listed in defaults from database
-        for (CommandSetting savedSetting : database.selectAll()) {
-            boolean found = false;
-            for (CommandSetting defaultSetting : defaults) {
-                if (savedSetting.equals(defaultSetting)) {
-                    found = true;
-                    break;
+            {
+                CommandSetting savedSetting = database.select(defaultSetting.getCls());
+                if (savedSetting == null) {
+                    if (defaultSetting.isEnabled()) {
+                        DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
+                    }
+                    database.insert(defaultSetting);
+                } else if (savedSetting.isEnabled()) {
+                    DiscordBot.getInstance().getCommandHandler().setCommandListener(savedSetting);
+                    if (!savedSetting.isEnabled()) {
+                        database.update(savedSetting);
+                    }
                 }
             }
-            if (!found) {
-                database.delete(savedSetting.getCls());
+
+            // remove commands not listed in defaults from database
+            for(
+            CommandSetting savedSetting :database.selectAll())
+
+            {
+                boolean found = false;
+                for (CommandSetting defaultSetting : defaults) {
+                    if (savedSetting.equals(defaultSetting)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    database.delete(savedSetting.getCls());
+                }
             }
-        }
+        }).start();
     }
 
     /**

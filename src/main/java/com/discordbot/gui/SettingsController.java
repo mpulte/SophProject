@@ -38,7 +38,7 @@ public class SettingsController implements FXMLController {
             Path path = IOUtils.getResourceFolder();
             resourceFolderField.setText(path.toString());
             resourceFolderField.setOnAction(e -> saveSettings());
-        }).run();
+        }).start();
     }
 
     /**

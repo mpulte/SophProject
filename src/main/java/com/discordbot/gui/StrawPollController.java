@@ -343,7 +343,7 @@ public class StrawPollController implements FXMLController {
     private void updateGuildComboBox() {
         ComboBoxEntry oldEntry = guildComboBox.getValue();
 
-        if (DiscordBot.getInstance().isRunning()) {
+        if (DiscordBot.getInstance().isRunning() && DiscordBot.getInstance().getJDA() != null) {
             for (Guild guild : DiscordBot.getInstance().getJDA().getGuilds()) {
                 ComboBoxEntry entry = new ComboBoxEntry(guild.getId(), guild.getName());
                 guildComboBox.getItems().add(entry);
@@ -361,7 +361,8 @@ public class StrawPollController implements FXMLController {
         ComboBoxEntry oldEntry = channelComboBox.getValue();
 
         channelComboBox.setItems(FXCollections.observableArrayList());
-        if (DiscordBot.getInstance().isRunning() && guildComboBox.getValue() != null) {
+        if (DiscordBot.getInstance().isRunning() && guildComboBox.getValue() != null
+                && DiscordBot.getInstance().getJDA() != null) {
             Guild guild = DiscordBot.getInstance().getJDA().getGuildById(guildComboBox.getValue().getId());
             for (Channel channel : guild.getTextChannels()) {
                 ComboBoxEntry entry = new ComboBoxEntry(channel.getId(), channel.getName());

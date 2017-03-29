@@ -105,7 +105,7 @@ public class ProfanityFilterListener extends ListenerAdapter {
                             new Thread(() -> {
                                 author.openPrivateChannel().complete();
                                 author.getPrivateChannel().sendMessage(messageBuilder.build()).queue();
-                            }).run();
+                            }).start();
                         }
                     }
                 } catch (InvalidKeyException e) {

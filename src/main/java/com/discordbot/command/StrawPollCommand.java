@@ -73,7 +73,7 @@ public class StrawPollCommand extends CommandListener {
                     author.openPrivateChannel().complete();
                     author.getPrivateChannel()
                             .sendMessage("Poll error: your response must be the number of the option").queue();
-                }).run();
+                }).start();
             }
         } catch (IndexOutOfBoundsException e) {
             // if we don't have a private channel open, we will have to open a new one
@@ -86,7 +86,7 @@ public class StrawPollCommand extends CommandListener {
                     author.openPrivateChannel().complete();
                     author.getPrivateChannel()
                             .sendMessage("Poll error: your choice was not a valid option").queue();
-                }).run();
+                }).start();
             }
         }
     }
