@@ -2,18 +2,25 @@ package com.discordbot.command;
 
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.utils.SimpleLog;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
+import com.discordbot.util.IOUtils;
 
+@Command (tag = "joke")
 public class JokeCommand extends CommandListener {
-		
-	public JokeCommand(CommandHandler handler) {
-		super(handler);
-		// TODO Auto-generated constructor stub
-	}
+	
+    private static final SimpleLog LOG = SimpleLog.getLog("JokeCommand");
 
-	private final String[] jokes = 
+
+	private final String[] defaultJokes = 
 			{
 					"What's red and bad for your teeth? A brick.",
 					"Did you hear about the soldier who survived mustard gas and pepper spray? He's a seasoned veteran.",
@@ -37,6 +44,37 @@ public class JokeCommand extends CommandListener {
 					"What do you call a cow that just gave birth? Decalfinated."
 			};
 	
+    private final List<String> jokes = new ArrayList<>();
+	
+	public JokeCommand(CommandHandler handler) {
+        super(handler);
+
+        Path path = IOUtils.getResourcePath("command", "joke", "jokes.txt");
+        try {
+            // try to lead the response list from the file
+            jokes.addAll(Files.readAllLines(path));
+
+            // make sure file wasn't empty
+            if (jokes.isEmpty()) {
+                jokes.addAll(Arrays.asList(defaultJokes));
+                LOG.warn("jokes file " + path.toFile() + " was empty, using default jokes");
+            }
+        } catch (IOException e1) {
+            // failed to open file, so create it and load it with the default responses
+            try {
+                Path directoryPath = IOUtils.getResourcePath("command", "joke");
+                if (directoryPath.toFile().exists() || directoryPath.toFile().mkdirs()) {
+                    Files.write(path, Arrays.asList(defaultJokes));
+                } else {
+                    throw new IOException("Unable to make directory " + directoryPath.toString());
+                }
+            } catch (IOException e2) {
+                // we couldn't open the directory or create the file for some reason
+                LOG.log(e2);
+            }
+            jokes.addAll(Arrays.asList(defaultJokes));
+        }
+    }
 
 	@Override
 	public void onCommandReceived(CommandReceivedEvent event) {
@@ -44,7 +82,7 @@ public class JokeCommand extends CommandListener {
 		MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 		
 		Random rand = new Random();
-		String joke =  jokes[rand.nextInt(jokes.length)];
+		String joke =  jokes.get(rand.nextInt(jokes.size()));
 		
 		channel.sendMessage(joke).queue();
 
