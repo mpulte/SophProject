@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.discordbot.gui.CommandPane?>
+<?import com.discordbot.gui.ControlPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+<VBox
+        xmlns="http://javafx.com/javafx/8"
+        xmlns:fx="http://javafx.com/fxml/1">
+
+    <MenuBar>
+        <Menu text="Options">
+            <MenuItem fx:id="tokensMenuItem" text="Tokens"/>
+            <MenuItem fx:id="settingsMenuItem" text="Settings"/>
+        </Menu>
+        <Menu text="Window">
+            <MenuItem fx:id="profanityFilterMenuItem" text="Profanity Filter"/>
+            <MenuItem fx:id="strawPollMenuItem" text="Straw Poll"/>
+        </Menu>
+    </MenuBar>
+
+    <ControlPane>
+        <padding><Insets bottom="10" left="10" right="10" top="10"/></padding>
+    </ControlPane>
+
+    <TitledPane text="Commands" collapsible="false">
+        <padding><Insets bottom="10" left="10" right="10"/></padding>
+        <ScrollPane style="-fx-background-color:transparent" fitToWidth="true">
+            <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>
+            <CommandPane/>
+        </ScrollPane>
+    </TitledPane>
+
+</VBox>
