@@ -9,8 +9,7 @@ import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 import javax.security.auth.login.LoginException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A singleton that handles the starting and stopping of the {@link JDA} as well as the adding and removing of {@link
@@ -24,7 +23,8 @@ public class DiscordBot {
 
     private JDA jda;
     private CommandHandler commandHandler;
-    private Map<Class<? extends EventListener>, EventListener> listeners;
+    private Map<Class<? extends EventListener>, EventListener> eventListeners;
+    private List<ChangeListener> changeListeners;
 
     private boolean canRestart = true;
     private boolean running = false;
@@ -33,7 +33,8 @@ public class DiscordBot {
      * Default constructor is private for singleton class.
      */
     private DiscordBot() {
-        listeners = new HashMap<>();
+        eventListeners = new HashMap<>();
+        changeListeners = new ArrayList<>();
         commandHandler = new CommandHandler();
         addEventListener(commandHandler);
     }
@@ -85,8 +86,10 @@ public class DiscordBot {
         if (!running) {
             try {
                 running = true;
-                jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(listeners.values().toArray()).buildBlocking();
-                jda.setAutoReconnect(true);
+                jda = new JDABuilder(AccountType.BOT).setToken(token).addListener(eventListeners.values().toArray()).buildBlocking();
+                for (ChangeListener changeListener : changeListeners) {
+                    changeListener.onStart();
+                }
             } catch (LoginException e) {
                 LOG.warn("JDA login failed");
                 running = false;
@@ -109,6 +112,9 @@ public class DiscordBot {
         if (running) {
             jda.shutdown(false);
             running = false;
+            for (ChangeListener changeListener : changeListeners) {
+                changeListener.onStop();
+            }
         }
         return this;
     }
@@ -123,6 +129,9 @@ public class DiscordBot {
             jda.shutdown();
             canRestart = false;
             running = false;
+            for (ChangeListener changeListener : changeListeners) {
+                changeListener.onStop();
+            }
         }
         return this;
     }
@@ -150,7 +159,7 @@ public class DiscordBot {
     public DiscordBot addEventListener(EventListener... listeners) {
         for (EventListener listener : listeners) {
             // will overwrite old listener, make sure its removed first
-            if (this.listeners.containsKey(listener.getClass())) {
+            if (this.eventListeners.containsKey(listener.getClass())) {
                 removeEventListener(listener);
             }
 
@@ -158,7 +167,7 @@ public class DiscordBot {
             if (isRunning()) {
                 jda.addEventListener(listener);
             }
-            this.listeners.put(listener.getClass(), listener);
+            this.eventListeners.put(listener.getClass(), listener);
         }
         return this;
     }
@@ -174,8 +183,30 @@ public class DiscordBot {
             if (isRunning()) {
                 jda.removeEventListener(listener);
             }
-            this.listeners.put(listener.getClass(), listener);
+            this.eventListeners.put(listener.getClass(), listener);
         }
+        return this;
+    }
+
+    /**
+     * Adds {@link ChangeListener}s to the DiscordBot.
+     *
+     * @param listeners The {@link ChangeListener}s to add.
+     * @return the DiscordBot instance.
+     */
+    public DiscordBot addChangeListener(ChangeListener... listeners) {
+        changeListeners.addAll(Arrays.asList(listeners));
+        return this;
+    }
+
+    /**
+     * Removes {@link ChangeListener}s from the DiscordBot.
+     *
+     * @param listeners The {@link ChangeListener}s to remove.
+     * @return the DiscordBot instance.
+     */
+    public DiscordBot removeChangeListener(ChangeListener... listeners) {
+        changeListeners.removeAll(Arrays.asList(listeners));
         return this;
     }
 
@@ -186,6 +217,24 @@ public class DiscordBot {
      */
     public CommandHandler getCommandHandler() {
         return commandHandler;
+    }
+
+    /**
+     * Listener to push start and stop event to. These events occur after {@link JDABuilder#buildBlocking()} and
+     * {@link JDA#shutdown(boolean)} have finished.
+     */
+    public interface ChangeListener {
+
+        /**
+         * Called after {@link JDABuilder#buildBlocking()} has finished.
+         */
+        void onStart();
+
+        /**
+         * Called after {@link JDA#shutdown(boolean)} has finished.
+         */
+        void onStop();
+
     }
 
 }
