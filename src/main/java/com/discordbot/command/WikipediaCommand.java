@@ -52,36 +52,39 @@ public class WikipediaCommand extends CommandListener {
 
         String topic = String.join("%20", event.getArgs());
 
-        try {
-            // get pages with extracts for the topic
-            String query = queryExtracts(topic);
-            if (query == null) {
-                // there is no page for the topic
-                channel.sendMessage(
-                        new MessageBuilder()
-                                .append("Sorry ")
-                                .append(author.getAsMention())
-                                .append(", Wikipedia doesn't know what you're talking about")
-                                .build())
-                        .queue();
-            } else if (query.endsWith(" refer to:") || query.endsWith(" refers to:")) {
-                channel.sendMessage(query + "\n" + queryLinks(topic)).queue();
-            } else if (query.length() >= 2000) {
-                // max message length is 2000 characters, so we may have to split up the query
-                for (String paragraph : query.split("\n")) {
-                    while (paragraph.length() >= 2000) {
-                        int cut = paragraph.lastIndexOf(" ", 2000);
-                        channel.sendMessage(paragraph.substring(0, cut));
-                        paragraph = paragraph.substring(cut + 1);
+        // going to have to connect to a website, so do this in a new thread
+        new Thread(() -> {
+            try {
+                // get pages with extracts for the topic
+                String query = queryExtracts(topic);
+                if (query == null) {
+                    // there is no page for the topic
+                    channel.sendMessage(
+                            new MessageBuilder()
+                                    .append("Sorry ")
+                                    .append(author.getAsMention())
+                                    .append(", Wikipedia doesn't know what you're talking about")
+                                    .build())
+                            .queue();
+                } else if (query.endsWith(" refer to:") || query.endsWith(" refers to:")) {
+                    channel.sendMessage(query + "\n" + queryLinks(topic)).queue();
+                } else if (query.length() >= 2000) {
+                    // max message length is 2000 characters, so we may have to split up the query
+                    for (String paragraph : query.split("\n")) {
+                        while (paragraph.length() >= 2000) {
+                            int cut = paragraph.lastIndexOf(" ", 2000);
+                            channel.sendMessage(paragraph.substring(0, cut));
+                            paragraph = paragraph.substring(cut + 1);
+                        }
+                        channel.sendMessage(paragraph).queue();
                     }
-                    channel.sendMessage(paragraph).queue();
+                } else {
+                    channel.sendMessage(query).queue();
                 }
-            } else {
-                channel.sendMessage(query).queue();
+            } catch (IOException e) {
+                LOG.log(e);
             }
-        } catch (IOException e) {
-            LOG.log(e);
-        }
+        }).start();
     }
 
     /**

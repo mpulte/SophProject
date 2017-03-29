@@ -42,27 +42,28 @@ public class XKCDCommand extends CommandListener {
         // start the url
         StringBuilder urlBuilder = new StringBuilder().append("https://xkcd.com/");
 
-
-        new Thread(() -> {
-            // if there is an arg, determine the selected comic
-            if (!event.getArgs().isEmpty()) {
-                if (NumberUtils.isDigits(event.getArgs().get(0))) {
-                    // append the url
-                    urlBuilder.append(event.getArgs().get(0)).append('/');
-                } else {
-                    // the arg wasn't a number, send an error message
-                    channel.sendMessage(
-                            new MessageBuilder()
-                                    .append(author.getAsMention())
-                                    .append(", just give me the comic number")
-                                    .build())
-                            .queue();
-                    return;
-                }
+        // if there is an arg, determine the selected comic
+        if (!event.getArgs().isEmpty()) {
+            if (NumberUtils.isDigits(event.getArgs().get(0))) {
+                // append the url
+                urlBuilder.append(event.getArgs().get(0)).append('/');
+            } else {
+                // the arg wasn't a number, send an error message
+                channel.sendMessage(
+                        new MessageBuilder()
+                                .append(author.getAsMention())
+                                .append(", just give me the comic number")
+                                .build())
+                        .queue();
+                return;
             }
+        }
 
-            // finish the url
-            urlBuilder.append("info.0.json");
+        // finish the url
+        urlBuilder.append("info.0.json");
+
+        // going to have to connect to a website, so do this in a new thread
+        new Thread(() -> {
 
             try {
                 JSONObject comic = IOUtils.readJsonFromUrl(urlBuilder.toString());
@@ -79,11 +80,11 @@ public class XKCDCommand extends CommandListener {
                                 .setAuthor(new MessageEmbed.AuthorInfo("xkcd", "https://xkcd.com/",
                                         "https://xkcd.com/s/0b7742.png", "https://xkcd.com/s/0b7742.png"))
                                 .setTitle(title)
-                                .setDescription(altText)
                                 .setUrl(comicURL)
                                 .setImage(new MessageEmbed.ImageInfo(
                                         imageURL, imageURL, 1, 1))
-                                .setFields(new ArrayList<>()))
+                                .setFields(new ArrayList<>())
+                                .setFooter(new MessageEmbed.Footer(altText, null, null)))
                         .queue();
             } catch (IOException | JSONException e) {
                 channel.sendMessage(
@@ -93,7 +94,7 @@ public class XKCDCommand extends CommandListener {
                                 .build())
                         .queue();
             }
-        }).run();
+        }).start();
     }
 
     /**
