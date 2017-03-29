@@ -59,8 +59,8 @@ public class ProfanityFilterListener extends ListenerAdapter {
             Message message = event.getMessage();
             User author = event.getAuthor();
 
-            List<String> words = filter.filter(message.getContent());
-            if (!words.isEmpty()) {
+            List<String> words;
+            if (!event.getAuthor().isBot() && !(words = filter.filter(message.getContent())).isEmpty() ) {
                 // delete the message
                 try {
                     message.delete().queue();
