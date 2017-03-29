@@ -10,6 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A {@link SQLiteDatabase} for querying the Command Database.
+ *
+ * @see SQLiteDatabase
+ */
 public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends CommandListener>> {
 
     private static final int DB_VERSION = 1;
@@ -23,39 +28,54 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     // create table statement
     private static final String CREATE_TABLE_COMMAND =
             "CREATE TABLE IF NOT EXISTS " + COMMAND + " (" +
-            COMMAND_CLASS      + " TEXT     NOT NULL  PRIMARY KEY, " +
-            COMMAND_TAG        + " TEXT     NOT NULL, " +
-            COMMAND_IS_ENABLED + " INTEGER  NOT NULL);";
+                    COMMAND_CLASS + " TEXT     NOT NULL  PRIMARY KEY, " +
+                    COMMAND_TAG + " TEXT     NOT NULL, " +
+                    COMMAND_IS_ENABLED + " INTEGER  NOT NULL);";
 
     // drop table statement
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + COMMAND;
 
+    /**
+     * Default constructor
+     */
     public CommandDB() {
         super(DB_VERSION);
-    } // constructor
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be created.
+     */
     @Override
     protected void onCreate() {
         query(CREATE_TABLE_COMMAND);
-    } // method onCreate
+    }
 
-    @Override
-    protected void onReset() {
-        onDestroy();
-        onCreate();
-    } // method onReset
-
+    /**
+     * Called by {@link SQLiteDatabase} if the database needs to be destroyed.
+     */
     @Override
     protected void onDestroy() {
         query(DROP_TABLE);
-    }  // method onDestroy
+    }
 
+    /**
+     * Called by {@link SQLiteDatabase} if the database version has increased.
+     *
+     * @param oldVersion The previous version of the CommandDB.
+     * @param newVersion The new version of the CommandDB.
+     */
     @Override
     protected void onUpgrade(int oldVersion, int newVersion) {
         onReset();
         LOG.info("Upgrading CommandDB from version " + oldVersion + " to " + newVersion);
-    } // method onReset
+    }
 
+    /**
+     * Selects a {@link CommandSetting}.
+     *
+     * @param cls The {@link Class} of the {@link CommandSetting} to select.
+     * @return the {@link CommandSetting} or null if no such {@link CommandSetting} exists.
+     */
     @Override
     public CommandSetting select(Class<? extends CommandListener> cls) {
         Connection connection = connectionPool.getConnection();
@@ -77,7 +97,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
                 setting = new CommandSetting(
                         resultSet.getString(COMMAND_CLASS),
                         resultSet.getString(COMMAND_TAG),
-                        resultSet.getInt(COMMAND_IS_ENABLED) == TRUE);
+                        Boolean.parseBoolean(resultSet.getString(COMMAND_IS_ENABLED)));
             }
             return setting;
         } catch (SQLException | ClassNotFoundException e) {
@@ -88,8 +108,13 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Selects all {@link CommandSetting}s.
+     *
+     * @return a {@link List<CommandSetting>}.
+     */
     @Override
     public List<CommandSetting> selectAll() {
         Connection connection = connectionPool.getConnection();
@@ -100,7 +125,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + COMMAND;
+        String query = "SELECT * FROM " + COMMAND + " ORDER BY " + COMMAND_CLASS;
 
         try {
             statement = connection.prepareStatement(query);
@@ -111,7 +136,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
                     settings.add(new CommandSetting(
                             resultSet.getString(COMMAND_CLASS),
                             resultSet.getString(COMMAND_TAG),
-                            resultSet.getInt(COMMAND_IS_ENABLED) == TRUE));
+                            Boolean.parseBoolean(resultSet.getString(COMMAND_IS_ENABLED))));
                 } catch (ClassNotFoundException e) {
                     LOG.log(e);
                 }
@@ -125,26 +150,38 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method select
+    }
 
+    /**
+     * Inserts one or more {@link CommandSetting}.
+     *
+     * @param settings The {@link CommandSetting}s to insert.
+     * @return the number of {@link CommandSetting}s inserted.
+     */
     @Override
-    public int insert(CommandSetting...settings) {
+    public int insert(CommandSetting... settings) {
         String query = "INSERT INTO " + COMMAND +
                 " (" + COMMAND_CLASS + "," + COMMAND_TAG + "," + COMMAND_IS_ENABLED + ")" +
                 "VALUES (?,?,?)";
 
         int result = 0;
         for (CommandSetting setting : settings) {
-            query(query,
+            result += query(query,
                     setting.getCls().getName(),
                     setting.getTag(),
-                    setting.isEnabled() ? TRUE_STRING : FALSE_STRING);
+                    Boolean.toString(setting.isEnabled()));
         }
         return result;
-    } // method insert
+    }
 
+    /**
+     * Updates one or more {@link CommandSetting}.
+     *
+     * @param settings The {@link CommandSetting}s to update.
+     * @return the number of {@link CommandSetting}s updated.
+     */
     @Override
-    public int update(CommandSetting...settings) {
+    public int update(CommandSetting... settings) {
         String query = "UPDATE " + COMMAND + " SET " +
                 COMMAND_TAG + " = ?, " +
                 COMMAND_IS_ENABLED + " = ? " +
@@ -152,18 +189,22 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
 
         int result = 0;
         for (CommandSetting setting : settings) {
-            query(query,
+            result += query(query,
                     setting.getTag(),
-                    setting.isEnabled() ? TRUE_STRING : FALSE_STRING,
+                    Boolean.toString(setting.isEnabled()),
                     setting.getCls().getName());
         }
         return result;
-    } // method update
+    }
 
-
-
+    /**
+     * Deletes one or more {@link CommandSetting}.
+     *
+     * @param classes The {@link Class}s of the {@link CommandSetting}s to delete.
+     * @return the number of {@link CommandSetting}s deleted.
+     */
     @Override
-    public int delete(Class...classes) {
+    public int delete(Class... classes) {
         String query = "DELETE FROM " + COMMAND + " WHERE " + COMMAND_CLASS + " = ?";
 
         int result = 0;
@@ -171,8 +212,14 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
             result += query(query, cls.getName());
         }
         return result;
-    } // method delete
+    }
 
+    /**
+     * Checks if a {@link CommandSetting} of a given {@link Class} exists.
+     *
+     * @param cls The {@link Class}s of the {@link CommandSetting}.
+     * @return <tt>true</tt> if a {@link CommandSetting} exists, <tt>false</tt> otherwise.
+     */
     @Override
     public boolean exists(Class<? extends CommandListener> cls) {
         Connection connection = connectionPool.getConnection();
@@ -198,6 +245,6 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
             DBUtil.closePreparedStatement(statement);
             connectionPool.freeConnection(connection);
         }
-    } // method exists
+    }
 
-} // class DiscordBotDB
+}

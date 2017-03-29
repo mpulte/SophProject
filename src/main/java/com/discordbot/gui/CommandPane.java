@@ -13,6 +13,10 @@ import javafx.scene.layout.GridPane;
 import javax.swing.JOptionPane;
 import java.util.List;
 
+/**
+ * A JavaFX {@link javafx.scene.layout.Pane Pane} used to add and remove {@link com.discordbot.command.CommandListener
+ * CommandListeners} from a {@link CommandHandler CommandHandler}.
+ */
 public class CommandPane extends GridPane {
 
     private final static double H_GAP = 20d;
@@ -21,10 +25,18 @@ public class CommandPane extends GridPane {
     private CommandHandler commandHandler;
     private CommandDB commandDB;
 
+    /**
+     * Default constructor uses the {@link CommandHandler CommandHandler} from {@link DiscordBot#getCommandHandler()
+     * DiscordBot.getInstance().getCommandHandler()}.
+     */
     public CommandPane() {
         this(DiscordBot.getInstance().getCommandHandler());
-    } // constructor
+    }
 
+    /**
+     * @param commandHandler The {@link CommandHandler CommandHandler} to add or remove {@link
+     *                       com.discordbot.command.CommandListener CommandListeners}
+     */
     public CommandPane(CommandHandler commandHandler) {
         this.commandHandler = commandHandler;
         commandDB = new CommandDB();
@@ -48,8 +60,14 @@ public class CommandPane extends GridPane {
         for (int i = 0; i < settings.size(); i++) {
             addSettingRow(i, settings.get(i));
         }
-    } // constructor
+    }
 
+    /**
+     * Adds a new row for a controlling a {@link CommandSetting CommandSetting}.
+     *
+     * @param row     The row to add the {@link javafx.scene.Node Nodes} to.
+     * @param setting The {@link CommandSetting CommandSetting} to control.
+     */
     private void addSettingRow(int row, CommandSetting setting) {
         // label
         String className = setting.getCls().getName().substring(setting.getCls().getName().lastIndexOf('.') + 1);
@@ -68,8 +86,18 @@ public class CommandPane extends GridPane {
         // action listeners
         textField.setOnAction(e -> update(setting, label, textField, checkBox));
         checkBox.setOnAction(e -> update(setting, label, textField, checkBox));
-    } // method addSettingRow
+    }
 
+    /**
+     * Updates the {@link CommandHandler Commandhandler} and {@link CommandDB CommandDB} database entries for a {@link
+     * CommandSetting CommandSetting}. Checks the corresponding {@link TextField TextField} and {@link CheckBox
+     * CheckBox} for changes
+     *
+     * @param setting The {@link CommandSetting CommandSetting} to update.
+     * @param label The {@link Label Label} corresponding to the {@link CommandSetting CommandSetting} to update.
+     * @param textField The {@link TextField} corresponding to the {@link CommandSetting CommandSetting} to update.
+     * @param checkBox The {@link CheckBox} corresponding to the {@link CommandSetting CommandSetting} to update.
+     */
     private void update(CommandSetting setting, Label label, TextField textField, CheckBox checkBox) {
         // check if the text has changed
         String text = textField.getText().trim();
@@ -121,6 +149,6 @@ public class CommandPane extends GridPane {
 
         // update check box text
         checkBox.setText(checkBox.isSelected() ? "on" : "off");
-    } // method update
+    }
 
-} // class CommandPane
+}

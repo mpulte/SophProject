@@ -1,6 +1,6 @@
 package com.discordbot.sql;
 
-import com.discordbot.model.Setting;
+import com.discordbot.model.Token;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,32 +10,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link SQLiteDatabase} for querying the Settings Database.
+ * A {@link SQLiteDatabase} for querying the Token Database.
  *
  * @see SQLiteDatabase
  */
-public class SettingDB extends SQLiteDatabase<Setting, String> {
+public class TokenDB extends SQLiteDatabase<Token, String> {
 
     private static final int DB_VERSION = 1;
 
     // table constants
-    private static final String SETTING = "settings";
-    private static final String SETTING_KEY = "set_key";
-    private static final String SETTING_VALUE = "set_value";
+    private static final String TOKEN = "token";
+    private static final String TOKEN_TOKEN = "token";
+    private static final String TOKEN_NAME = "name";
 
     // create table statement
-    private static final String CREATE_TABLE_SETTING =
-            "CREATE TABLE IF NOT EXISTS " + SETTING + " (" +
-                    SETTING_KEY + " TEXT     NOT NULL  PRIMARY KEY, " +
-                    SETTING_VALUE + " TEXT     NOT NULL);";
+    private static final String CREATE_TABLE_TOKEN =
+            "CREATE TABLE IF NOT EXISTS " + TOKEN + " (" +
+                    TOKEN_TOKEN + " TEXT  NOT NULL  PRIMARY KEY, " +
+                    TOKEN_NAME + " TEXT);";
 
     // drop table statement
-    private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + SETTING;
+    private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + TOKEN;
 
     /**
      * Default constructor
      */
-    public SettingDB() {
+    public TokenDB() {
         super(DB_VERSION);
     }
 
@@ -44,7 +44,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
      */
     @Override
     protected void onCreate() {
-        query(CREATE_TABLE_SETTING);
+        query(CREATE_TABLE_TOKEN);
     }
 
     /**
@@ -64,17 +64,17 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
     @Override
     protected void onUpgrade(int oldVersion, int newVersion) {
         onReset();
-        LOG.info("Upgrading SettingDB from version " + oldVersion + " to " + newVersion);
+        LOG.info("Upgrading TokenDB from version " + oldVersion + " to " + newVersion);
     }
 
     /**
-     * Selects a {@link Setting}.
+     * Selects a {@link Token}.
      *
-     * @param key The key of the {@link Setting} to select.
-     * @return the {@link Setting} or null if no such {@link Setting} exists.
+     * @param token The token of the {@link Token} to select.
+     * @return the {@link Token} or null if no such {@link Token} exists.
      */
     @Override
-    public Setting select(String key) {
+    public Token select(String token) {
         Connection connection = connectionPool.getConnection();
         if (connection == null) {
             return null;
@@ -83,14 +83,14 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+        String query = "SELECT * FROM " + TOKEN + " WHERE " + TOKEN_TOKEN + " = ?";
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setString(1, key);
+            statement.setString(1, token);
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return new Setting(resultSet.getString(SETTING_KEY), resultSet.getString(SETTING_VALUE));
+                return new Token(resultSet.getString(TOKEN_TOKEN), resultSet.getString(TOKEN_NAME));
             }
             return null;
         } catch (SQLException e) {
@@ -104,12 +104,12 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
     }
 
     /**
-     * Selects all {@link Setting}s.
+     * Selects all {@link Token}s.
      *
-     * @return a {@link List<Setting>}.
+     * @return a {@link List<Token>}.
      */
     @Override
-    public List<Setting> selectAll() {
+    public List<Token> selectAll() {
         Connection connection = connectionPool.getConnection();
         if (connection == null) {
             return null;
@@ -118,16 +118,16 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + SETTING + " ORDER BY " + SETTING_KEY;
+        String query = "SELECT * FROM " + TOKEN;
 
         try {
             statement = connection.prepareStatement(query);
             resultSet = statement.executeQuery();
-            List<Setting> settings = new ArrayList<>();
+            List<Token> tokens = new ArrayList<>();
             while (resultSet.next()) {
-                settings.add(new Setting(resultSet.getString(SETTING_KEY), resultSet.getString(SETTING_VALUE)));
+                tokens.add(new Token(resultSet.getString(TOKEN_TOKEN), resultSet.getString(TOKEN_NAME)));
             }
-            return settings;
+            return tokens;
         } catch (SQLException e) {
             LOG.log(e);
             return null;
@@ -139,66 +139,66 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
     }
 
     /**
-     * Inserts one or more {@link Setting}.
+     * Inserts one or more {@link Token}.
      *
-     * @param settings The {@link Setting}s to insert.
-     * @return the number of {@link Setting}s inserted.
+     * @param tokens The {@link Token}s to insert.
+     * @return the number of {@link Token}s inserted.
      */
     @Override
-    public int insert(Setting... settings) {
-        String query = "INSERT INTO " + SETTING +
-                " (" + SETTING_KEY + "," + SETTING_VALUE + ")" +
+    public int insert(Token... tokens) {
+        String query = "INSERT INTO " + TOKEN +
+                " (" + TOKEN_TOKEN + "," + TOKEN_NAME + ")" +
                 "VALUES (?,?)";
 
         int result = 0;
-        for (Setting setting : settings) {
-            result += query(query, setting.getKey(), setting.getValue());
+        for (Token token : tokens) {
+            result += query(query, token.getToken(), token.getName());
         }
         return result;
     }
 
     /**
-     * Updates one or more {@link Setting}.
+     * Updates one or more {@link Token}.
      *
-     * @param settings The {@link Setting}s to update.
-     * @return the number of {@link Setting}s updated.
+     * @param tokens The {@link Token}s to update.
+     * @return the number of {@link Token}s updated.
      */
     @Override
-    public int update(Setting... settings) {
-        String query = "UPDATE " + SETTING + " SET " + SETTING_VALUE + " = ?" + " WHERE " + SETTING_KEY + " = ?";
+    public int update(Token... tokens) {
+        String query = "UPDATE " + TOKEN + " SET " + TOKEN_NAME + " = ?" + " WHERE " + TOKEN_TOKEN + " = ?";
 
         int result = 0;
-        for (Setting setting : settings) {
-            result += query(query, setting.getValue(), setting.getKey());
+        for (Token token : tokens) {
+            result += query(query, token.getName(), token.getToken());
         }
         return result;
     }
 
     /**
-     * Deletes one or more {@link Setting}.
+     * Deletes one or more {@link Token}.
      *
-     * @param keys The key of the {@link Setting}s to delete.
-     * @return the number of {@link Setting}s deleted.
+     * @param tokens The tokens of the {@link Token}s to delete.
+     * @return the number of {@link Token}s deleted.
      */
     @Override
-    public int delete(String... keys) {
-        String query = "DELETE FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+    public int delete(String... tokens) {
+        String query = "DELETE FROM " + TOKEN + " WHERE " + TOKEN_TOKEN + " = ?";
 
         int result = 0;
-        for (String key : keys) {
-            result += query(query, key);
+        for (String token : tokens) {
+            result += query(query, token);
         }
         return result;
     }
 
     /**
-     * Checks if a {@link Setting} of a given key exists.
+     * Checks if a {@link Token} of a given token exists.
      *
-     * @param key The key of the {@link Setting}.
-     * @return <tt>true</tt> if a {@link Setting} exists, <tt>false</tt> otherwise.
+     * @param token The token of the {@link Token}.
+     * @return <tt>true</tt> if a {@link Token} exists, <tt>false</tt> otherwise.
      */
     @Override
-    public boolean exists(String key) {
+    public boolean exists(String token) {
         Connection connection = connectionPool.getConnection();
         if (connection == null) {
             return false;
@@ -207,11 +207,11 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT " + SETTING_KEY + " FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+        String query = "SELECT " + TOKEN_TOKEN + " FROM " + TOKEN + " WHERE " + TOKEN_TOKEN + " = ?";
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setString(1, key);
+            statement.setString(1, token);
             resultSet = statement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {
