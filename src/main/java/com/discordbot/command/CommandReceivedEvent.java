@@ -4,6 +4,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,12 +41,28 @@ public class CommandReceivedEvent {
      */
     public static CommandReceivedEvent buildCommand(MessageReceivedEvent event) {
         String message = event.getMessage().getContent().replaceFirst(CommandReceivedEvent.PREFIX, "").trim();
+        String command = "";
+        List<String> args = new ArrayList<>();
 
         // split the message by spaces, the first String will be the tag, the rest are args
-        List<String> args = new ArrayList<>(Arrays.asList(message.split(" ")));
-        String command = args.get(0); // first item split is the tag
-        args.remove(0); // remove tag from args list
+        Iterator<String> words = new ArrayList<>(Arrays.asList(message.split(" "))).iterator();
+        if (words.hasNext()) {
+            command = words.next();
+        }
+        while (words.hasNext()) {
+            StringBuilder builder = new StringBuilder(words.next());
+            String arg;
+            while ((arg = builder.toString()).startsWith("\"") && !arg.endsWith("\"")) {
+                builder.append(' ').append(words.next());
+            }
 
+            // if arg is surrounded in quotes, remove the quotes
+            if (arg.startsWith("\"") && arg.startsWith("\"") && arg.length() > 1) {
+                arg = arg.substring(1, arg.length() - 1);
+            }
+            
+            args.add(arg);
+        }
         return new CommandReceivedEvent(event, command, args);
     }
 
