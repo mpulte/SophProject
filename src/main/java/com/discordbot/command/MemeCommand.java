@@ -1,11 +1,15 @@
 package com.discordbot.command;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.awt.Graphics2D;
 
 import javax.imageio.ImageIO;
 
@@ -13,9 +17,9 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
+@Command(tag = "meme")
 public class MemeCommand extends CommandListener {
 	
 	private static final String[] extensions = {"png", "jpg", "jpeg", "gif"};
@@ -37,9 +41,20 @@ public class MemeCommand extends CommandListener {
 					File path = new File(System.getProperty("user.home") + "/meme/" + fileName + "." + ext);
 					final BufferedImage image = ImageIO.read(path);
 
-					Graphics g = image.getGraphics();
-					g.setFont(g.getFont().deriveFont(20f));
-					g.drawString(String.join(" " + "\n", args.subList(1, args.size())), 50, 450);
+					Graphics2D g = (Graphics2D) image.getGraphics();
+//					g.fillRect(0, 0, image.getWidth(), image.getHeight());
+					
+					FontMetrics fm = g.getFontMetrics();
+					System.out.println(fm.getAscent());
+					double scale = image.getHeight() / (fm.getHeight());
+					String draw = String.join(" ", args.subList(1, args.size()));
+					
+					Font font = new Font("Impact", Font.PLAIN, 20); // g.getFont().deriveFont(Font.PLAIN, AffineTransform.getScaleInstance(scale, scale));
+					g.setFont(font);
+					fm = g.getFontMetrics(font);
+					int xPos = (image.getWidth() - fm.stringWidth(draw)) / 2;
+					int yPos = ((image.getWidth() - fm.getHeight()) / 2) + fm.getAscent();
+					g.drawString(draw, xPos, yPos);
 					g.dispose();
 					
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
