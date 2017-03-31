@@ -51,21 +51,16 @@ public class CommandReceivedEvent {
         }
         while (words.hasNext()) {
             StringBuilder builder = new StringBuilder(words.next());
-            String arg = builder.toString();
-            while (words.hasNext() && arg.startsWith("\"") && !arg.endsWith("\"")) {
+            while (words.hasNext() && builder.charAt(0) == '"' && builder.charAt(builder.length() - 1) != '"') {
                 builder.append(' ').append(words.next());
             }
 
             // if arg is surrounded in quotes, remove the quotes
-            if (arg.startsWith("\"") && arg.length() > 1) {
-                if (arg.endsWith("\"")) {
-                    arg = arg.substring(1, arg.length() - 1);
-                } else {
-                    arg = arg.substring(1);
-                }
+            if (builder.charAt(0) == '"' && builder.length() > 1) {
+                args.add(builder.substring(1, builder.length() - (builder.charAt(builder.length() - 1) == '"' ? 1 : 0)));
+            } else {
+                args.add(builder.toString());
             }
-
-            args.add(arg);
         }
         return new CommandReceivedEvent(event, command, args);
     }
