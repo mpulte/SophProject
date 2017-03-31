@@ -51,8 +51,8 @@ public class CommandReceivedEvent {
         }
         while (words.hasNext()) {
             StringBuilder builder = new StringBuilder(words.next());
-            String arg;
-            while ((arg = builder.toString()).startsWith("\"") && !arg.endsWith("\"")) {
+            String arg = builder.toString();
+            while (words.hasNext() && arg.startsWith("\"") && !arg.endsWith("\"")) {
                 builder.append(' ').append(words.next());
             }
 
