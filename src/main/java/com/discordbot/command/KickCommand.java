@@ -87,7 +87,7 @@ public class KickCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the KickCommand.
+     * Used for receiving help for using the KickCommand.
      *
      * @return A {@link String} description of help for the KickCommand.
      */

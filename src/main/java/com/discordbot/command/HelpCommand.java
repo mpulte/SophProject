@@ -25,7 +25,7 @@ public class HelpCommand extends CommandListener {
      * a list of {@link CommandListener} and their respective descriptions. If there are arguments, it lists the help
      * for the {@link CommandListener} passed as arguments.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event The {@link CommandReceivedEvent} to handl
      */
     @Override
     public void onCommandReceived(CommandReceivedEvent event) {
@@ -78,7 +78,7 @@ public class HelpCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the HelpCommand.
+     * Used for receiving help using the HelpCommand.
      *
      * @return A {@link String} description of help for the HelpCommand.
      */

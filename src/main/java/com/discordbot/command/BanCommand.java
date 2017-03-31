@@ -87,7 +87,7 @@ public class BanCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the BanCommand.
+     * Used for receiving help for using the BanCommand.
      *
      * @return A {@link String} description of help for the BanCommand.
      */

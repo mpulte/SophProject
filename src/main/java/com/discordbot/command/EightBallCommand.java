@@ -7,7 +7,10 @@ import net.dv8tion.jda.core.utils.SimpleLog;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 /**
  * A {@link CommandListener} for handling the eight ball command.
@@ -78,8 +81,8 @@ public class EightBallCommand extends CommandListener {
     }
 
     /**
-     * Handles any {@link CommandReceivedEvent}. Replies on the same {@link
-     * net.dv8tion.jda.core.entities.Channel Channel} with a random fortune.
+     * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
+     * a random fortune.
      *
      * @param event The {@link CommandReceivedEvent} to handle.
      */
@@ -104,7 +107,7 @@ public class EightBallCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the EightBallCommand.
+     * Used for receiving help for using the EightBallCommand.
      *
      * @return A {@link String} description of help for the EightBallCommand.
      */

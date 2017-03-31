@@ -108,7 +108,7 @@ public class XKCDCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the CommandListener.
+     * Used for receiving help for using the CommandListener.
      *
      * @return A {@link String} description of help for the CommandListener.
      */

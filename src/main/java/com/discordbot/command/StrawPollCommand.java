@@ -114,7 +114,7 @@ public class StrawPollCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the StrawPollCommand.
+     * Used for receiving help for using the StrawPollCommand.
      *
      * @return A {@link String} description of help for the StrawPollCommand.
      */
