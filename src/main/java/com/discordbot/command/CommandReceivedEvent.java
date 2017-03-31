@@ -57,10 +57,14 @@ public class CommandReceivedEvent {
             }
 
             // if arg is surrounded in quotes, remove the quotes
-            if (arg.startsWith("\"") && arg.startsWith("\"") && arg.length() > 1) {
-                arg = arg.substring(1, arg.length() - 1);
+            if (arg.startsWith("\"") && arg.length() > 1) {
+                if (arg.endsWith("\"")) {
+                    arg = arg.substring(1, arg.length() - 1);
+                } else {
+                    arg = arg.substring(1);
+                }
             }
-            
+
             args.add(arg);
         }
         return new CommandReceivedEvent(event, command, args);
