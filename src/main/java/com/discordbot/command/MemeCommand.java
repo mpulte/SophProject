@@ -78,44 +78,46 @@ public class MemeCommand extends CommandListener {
             channel.sendMessage(messageBuilder.build()).queue();
         } else if (args.size() >= 2) {
             // they want a meme, so let's give them one
-            String fileName = args.get(0);
+            new Thread(() -> {
+                String fileName = args.get(0);
 
-            for (String ext : extensions) {
-                try {
-                    // load the meme
-                    File file = IOUtils.getResourcePath("meme", fileName + '.' + ext).toFile();
-                    if (!file.exists()) {
-                        continue;
+                for (String ext : extensions) {
+                    try {
+                        // load the meme
+                        File file = IOUtils.getResourcePath("meme", fileName + '.' + ext).toFile();
+                        if (!file.exists()) {
+                            continue;
+                        }
+                        final BufferedImage image = ImageIO.read(file);
+
+                        // get the meme graphics and bounds
+                        Graphics2D graphics = (Graphics2D) image.getGraphics();
+                        Rectangle2D topBounds = new Rectangle2D.Double(5, 5,
+                                image.getWidth() - 10, image.getHeight() / 4);
+                        Rectangle2D bottomBounds = new Rectangle2D.Double(5, image.getHeight() - 5,
+                                image.getWidth() - 10, image.getHeight() / 4);
+
+                        // add text to the meme
+                        graphics.setFont(new Font("Impact", Font.PLAIN, 30));
+                        addTextToGraphics(graphics, topBounds, args.get(1).toUpperCase(), Position.TOP);
+                        if (args.size() >= 3) {
+                            addTextToGraphics(graphics, bottomBounds, args.get(2).toUpperCase(), Position.BOTTOM);
+                        }
+                        graphics.dispose();
+
+                        // convert the meme to an InputStream
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        ImageIO.write(image, "png", baos);
+
+                        // send the meme
+                        channel.sendFile(baos.toByteArray(), args.get(0) + ".png", (new MessageBuilder()).append("...").build()).queue();
+                        return;
+                    } catch (IOException e) {
+                        LOG.log(e);
                     }
-                    final BufferedImage image = ImageIO.read(file);
-
-                    // get the meme graphics and bounds
-                    Graphics2D graphics = (Graphics2D) image.getGraphics();
-                    Rectangle2D topBounds = new Rectangle2D.Double(5, 5,
-                            image.getWidth() - 10, image.getHeight() / 4);
-                    Rectangle2D bottomBounds = new Rectangle2D.Double(5, image.getHeight() - 5,
-                            image.getWidth() - 10, image.getHeight() / 4);
-
-                    // add text to the meme
-                    graphics.setFont(new Font("Impact", Font.PLAIN, 30));
-                    addTextToGraphics(graphics, topBounds, args.get(1).toUpperCase(), Position.TOP);
-                    if (args.size() >= 3) {
-                        addTextToGraphics(graphics, bottomBounds, args.get(2).toUpperCase(), Position.BOTTOM);
-                    }
-                    graphics.dispose();
-
-                    // convert the meme to an InputStream
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(image, "png", baos);
-
-                    // send the meme
-                    channel.sendFile(baos.toByteArray(), args.get(0) + ".png", (new MessageBuilder()).append("...").build()).queue();
-                    return;
-                } catch (IOException e) {
-                    LOG.log(e);
                 }
-            }
-            channel.sendMessage("There are no memes by the name " + args.get(0)).queue();
+                channel.sendMessage("There are no memes by the name " + args.get(0)).queue();
+        }).start();
         } else {
             // no text supplied
             channel.sendMessage("Blank memes aren't fun").queue();
