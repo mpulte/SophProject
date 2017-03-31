@@ -98,16 +98,15 @@ public class MemeCommand extends CommandListener {
 
                     // add text to the meme
                     graphics.setFont(new Font("Impact", Font.PLAIN, 30));
-                    addTextToGraphics(graphics, topBounds, args.get(1), Position.TOP);
+                    addTextToGraphics(graphics, topBounds, args.get(1).toUpperCase(), Position.TOP);
                     if (args.size() >= 3) {
-                        addTextToGraphics(graphics, bottomBounds, args.get(2), Position.BOTTOM);
+                        addTextToGraphics(graphics, bottomBounds, args.get(2).toUpperCase(), Position.BOTTOM);
                     }
                     graphics.dispose();
 
                     // convert the meme to an InputStream
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ImageIO.write(image, "png", baos);
-                    ImageIO.write(image, "png", new File("test.png"));
 
                     // send the meme
                     channel.sendFile(baos.toByteArray(), args.get(0) + ".png", (new MessageBuilder()).append("...").build()).queue();
