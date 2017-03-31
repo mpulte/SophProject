@@ -16,20 +16,14 @@ public class RollCommand extends CommandListener {
     private static final int DEFAULT = 100;
 
     /**
-     * @param handler The {@link CommandHandler} the RollCommand is bound to.
-     */
-    public RollCommand(CommandHandler handler) {
-        super(handler);
-    }
-
-    /**
      * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * a random number.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         // event information
         User author = event.getMessageReceivedEvent().getAuthor();
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
@@ -66,7 +60,7 @@ public class RollCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the RollCommand.
+     * Used for receiving help for using the RollCommand.
      *
      * @return A {@link String} description of help for the RollCommand.
      */

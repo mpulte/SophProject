@@ -50,7 +50,7 @@ public class CommandHandler extends ListenerAdapter {
      */
     public CommandHandler addCommandListener(String tag, Class<? extends CommandListener> cls) {
         try {
-            addCommandListener(tag, cls.getConstructor(CommandHandler.class).newInstance(this));
+            addCommandListener(tag, cls.getConstructor().newInstance());
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             LOG.log(e);
         }
@@ -144,7 +144,7 @@ public class CommandHandler extends ListenerAdapter {
             for (Map.Entry<String, CommandListener> entry : listeners.entrySet()) {
                 if (commandEvent.getTag().equals(entry.getKey())
                         && entry.getValue().usesChannel(event.getChannelType())) {
-                    entry.getValue().onCommandReceived(commandEvent);
+                    entry.getValue().onCommandReceived(commandEvent, this);
                 }
             }
         }

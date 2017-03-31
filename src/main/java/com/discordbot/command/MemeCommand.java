@@ -2,7 +2,6 @@ package com.discordbot.command;
 
 import com.discordbot.util.IOUtils;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -21,6 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
+/**
+ * A {@link CommandListener} for handling the meme command.
+ *
+ * @see CommandListener
+ */
 @Command(tag = "meme")
 public class MemeCommand extends CommandListener {
 
@@ -28,18 +32,21 @@ public class MemeCommand extends CommandListener {
 
     private static final String[] extensions = {"png", "jpg", "jpeg", "gif"};
 
-    public MemeCommand(CommandHandler handler) {
-        super(handler);
-    }
-
+    /**
+     * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
+     * a meme. If no arguments are supplied, or the argument is help or list, it will list the available meme.
+     *
+     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
+     */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    protected void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
         java.util.List<String> args = event.getArgs();
 
         if (args.isEmpty() || args.get(0).equalsIgnoreCase("help") || args.get(0).equalsIgnoreCase("list")) {
             // they want to know what memes are available
-            Path path = IOUtils.getResourcePath("meme");
+            Path path = IOUtils.getResourcePath("command", "meme");
 
             // make sure path exists
             if (!path.toFile().exists()) {
@@ -84,7 +91,7 @@ public class MemeCommand extends CommandListener {
                 for (String ext : extensions) {
                     try {
                         // load the meme
-                        File file = IOUtils.getResourcePath("meme", fileName + '.' + ext).toFile();
+                        File file = IOUtils.getResourcePath("command", "meme", fileName + '.' + ext).toFile();
                         if (!file.exists()) {
                             continue;
                         }
@@ -110,23 +117,36 @@ public class MemeCommand extends CommandListener {
                         ImageIO.write(image, "png", baos);
 
                         // send the meme
-                        channel.sendFile(baos.toByteArray(), args.get(0) + ".png", (new MessageBuilder()).append("...").build()).queue();
+                        channel.sendFile(baos.toByteArray(), args.get(0) + ".png",
+                                (new MessageBuilder())
+                                        .append(event.getMessageReceivedEvent().getAuthor().getAsMention())
+                                        .build())
+                                .queue();
                         return;
                     } catch (IOException e) {
                         LOG.log(e);
                     }
                 }
+                // did not return, so no file was found
                 channel.sendMessage("There are no memes by the name " + args.get(0)).queue();
-        }).start();
+            }).start();
         } else {
             // no text supplied
             channel.sendMessage("Blank memes aren't fun").queue();
         }
     }
 
+    /**
+     * Adds text to the top or the bottom of a {@link Graphics2D}. The text will fit to the specified bounds.
+     *
+     * @param graphics2D The {@link Graphics2D} to add text to.
+     * @param bounds     A {@link Rectangle2D} representing the bounds of the text to add.
+     * @param text       The text to add.
+     * @param position   The {@link Position} to add the text to.
+     */
     public void addTextToGraphics(Graphics2D graphics2D, Rectangle2D bounds, String text, Position position) {
         // create a new graphics so that we can add text without changing graphic2D's settings
-        Graphics2D graphics = (Graphics2D)graphics2D.create();
+        Graphics2D graphics = (Graphics2D) graphics2D.create();
 
         // calculate the scale of the text
         Font font = graphics.getFont();
@@ -157,21 +177,29 @@ public class MemeCommand extends CommandListener {
         graphics.dispose();
     }
 
-    @Override
-    public boolean usesChannel(ChannelType type) {
-        return true;
-    }
-
+    /**
+     * Used for accessing a description of the MemeCommand.
+     *
+     * @return A {@link String} description of the MemeCommand.
+     */
     @Override
     public String getDescription() {
         return "Posts a meme with the caption you give it.";
     }
 
+    /**
+     * Used for receiving help for using the MemeCommand.
+     *
+     * @return A {@link String} description of help for the MemeCommand.
+     */
     @Override
     public String getHelp() {
-        return "Type the name of the meme followed by the caption.";
+        return "Type the name of the meme followed by the caption. Use help or list to get a list of available memes.";
     }
 
-    private enum Position { TOP, BOTTOM }
+    /**
+     * Used to designate the position in the meme to add the text.
+     */
+    private enum Position {TOP, BOTTOM}
 
 }

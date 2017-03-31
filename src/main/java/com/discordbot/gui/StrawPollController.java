@@ -209,7 +209,7 @@ public class StrawPollController implements FXMLController, DiscordBot.ChangeLis
             List<String> options = optionFields.stream().map(TextInputControl::getText).collect(Collectors.toList());
             poll = new StrawPoll(promptField.getText(), options.toArray(new String[options.size()]));
             commandHandler.addCommandListener(tagField.getText(),
-                    new StrawPollCommand(commandHandler, poll, channelComboBox.getValue().getId()));
+                    new StrawPollCommand(poll, channelComboBox.getValue().getId()));
 
             // post the poll
             if (DiscordBot.getInstance().isRunning()) {
