@@ -22,20 +22,14 @@ import java.util.ArrayList;
 public class XKCDCommand extends CommandListener {
 
     /**
-     * @param handler The {@link CommandHandler} the CommandListener is bound to.
-     */
-    public XKCDCommand(CommandHandler handler) {
-        super(handler);
-    }
-
-    /**
      * Handles a {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * an xkcd comic.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
         User author = event.getMessageReceivedEvent().getAuthor();
 

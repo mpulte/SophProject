@@ -48,11 +48,9 @@ public class JokeCommand extends CommandListener {
     private final List<String> jokes = new ArrayList<>();
 
     /**
-     * @param handler The {@link CommandHandler} the JokeCommand is bound to.
+     * Constructor initializes the jokes list.
      */
-    public JokeCommand(CommandHandler handler) {
-        super(handler);
-
+    public JokeCommand() {
         Path path = IOUtils.getResourcePath("command", "joke", "jokes.txt");
         try {
             // try to lead the response list from the file
@@ -84,10 +82,11 @@ public class JokeCommand extends CommandListener {
      * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * a random joke.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 
         Random rand = new Random();

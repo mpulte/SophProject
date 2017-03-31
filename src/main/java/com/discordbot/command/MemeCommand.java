@@ -33,20 +33,14 @@ public class MemeCommand extends CommandListener {
     private static final String[] extensions = {"png", "jpg", "jpeg", "gif"};
 
     /**
-     * @param handler The {@link CommandHandler} the MemeCommand is bound to.
-     */
-    public MemeCommand(CommandHandler handler) {
-        super(handler);
-    }
-
-    /**
      * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * a meme. If no arguments are supplied, or the argument is help or list, it will list the available meme.
      *
      * @param event The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    protected void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
         java.util.List<String> args = event.getArgs();
 

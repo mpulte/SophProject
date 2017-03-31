@@ -48,11 +48,9 @@ public class EightBallCommand extends CommandListener {
     private final List<String> responses = new ArrayList<>();
 
     /**
-     * @param handler The {@link CommandHandler} the EightBallCommand is bound to.
+     * Constructor initializes the list of fortunes.
      */
-    public EightBallCommand(CommandHandler handler) {
-        super(handler);
-
+    public EightBallCommand() {
         Path path = IOUtils.getResourcePath("command", "8ball", "fortunes.txt");
         try {
             // try to lead the response list from the file
@@ -84,10 +82,11 @@ public class EightBallCommand extends CommandListener {
      * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * a random fortune.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 
         Random rand = new Random();

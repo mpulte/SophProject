@@ -20,10 +20,10 @@ public class StrawPollCommand extends CommandListener {
     private String channelId;
 
     /**
-     * @param handler The {@link CommandHandler} the StrawPollCommand is bound to.
+     * @param poll      The {@link StrawPoll} to post results to.
+     * @param channelId The id of the {@link net.dv8tion.jda.core.entities.TextChannel} to use for polling.
      */
-    public StrawPollCommand(CommandHandler handler, StrawPoll poll, String channelId) {
-        super(handler);
+    public StrawPollCommand(StrawPoll poll, String channelId) {
         this.poll = poll;
         this.channelId = channelId;
     }
@@ -33,10 +33,11 @@ public class StrawPollCommand extends CommandListener {
      * net.dv8tion.jda.core.entities.TextChannel} or any {@link net.dv8tion.jda.core.entities.PrivateChannel}. Posts the
      * poll prompt if no argument is supplied.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageReceivedEvent source = event.getMessageReceivedEvent();
         User author = event.getMessageReceivedEvent().getAuthor();
 
