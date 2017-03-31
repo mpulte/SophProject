@@ -183,11 +183,8 @@ public class DiscordBotApp extends Application {
 
             // load each command that is listed in defaults
             CommandDB database = new CommandDB();
-            for(
-            CommandSetting defaultSetting :defaults)
-
-            {
-                CommandSetting savedSetting = database.select(defaultSetting.getCls());
+            for (CommandSetting defaultSetting : defaults) {
+                CommandSetting savedSetting = database.select(defaultSetting.getCls().getName());
                 if (savedSetting == null) {
                     if (defaultSetting.isEnabled()) {
                         DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
@@ -202,19 +199,16 @@ public class DiscordBotApp extends Application {
             }
 
             // remove commands not listed in defaults from database
-            for(
-            CommandSetting savedSetting :database.selectAll())
-
-            {
+            for (String cls : database.selectAllKeys()) {
                 boolean found = false;
-                for (CommandSetting defaultSetting : defaults) {
-                    if (savedSetting.equals(defaultSetting)) {
+                for (CommandSetting setting : defaults) {
+                    if (setting.getCls().getName().equals(cls)) {
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    database.delete(savedSetting.getCls());
+                    database.delete(cls);
                 }
             }
         }).start();
