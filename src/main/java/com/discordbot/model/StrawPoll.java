@@ -3,26 +3,50 @@ package com.discordbot.model;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A StrawPoll that tracks responses to a prompt with options.
+ */
 public class StrawPoll {
 
-    private String question;
+    private String prompt;
     private String[] options;
     private Map<String, Integer> responses;
 
-    public StrawPoll(String question, String[] options) {
-        this.question = question;
+    /**
+     * @param prompt  the StrawPoll's prompt.
+     * @param options the StrawPoll's options.
+     */
+    public StrawPoll(String prompt, String[] options) {
+        this.prompt = prompt;
         this.options = options;
         responses = new HashMap<>();
-    } // constructor
+    }
 
-    public String getQuestion() {
-        return question;
-    } // method getOptions
+    /**
+     * Accessor for the StrawPoll's prompt.
+     *
+     * @return the StrawPoll's prompt.
+     */
+    public String getPrompt() {
+        return prompt;
+    }
 
+    /**
+     * Accessor for the StrawPoll's options.
+     *
+     * @return the StrawPoll's options.
+     */
     public String[] getOptions() {
         return options;
-    } // method getOptions
+    }
 
+    /**
+     * Adds or updates a response to the StrawPoll.
+     *
+     * @param key    A key to track the responder.
+     * @param choice The responder's choice.
+     * @throws IndexOutOfBoundsException if the choice is not within the bounds of the options.
+     */
     public void putResponse(String key, Integer choice) throws IndexOutOfBoundsException {
         // check for index out of bounds
         if (choice < 0 || choice >= options.length) {
@@ -35,14 +59,23 @@ public class StrawPoll {
         } else {
             responses.put(key, choice);
         }
-    } // method putResponse
+    }
 
-    @SuppressWarnings("WeakerAccess")
+    /**
+     * Calculates the total number of responses.
+     *
+     * @return the total number of responses.
+     */
     public int totalResponses() {
         return responses.size();
-    } // method totalResponses
+    }
 
-    @SuppressWarnings("WeakerAccess")
+    /**
+     * Calculates the number of responses for a given option.
+     *
+     * @param index The index of the option.
+     * @return the number of responses for the given option.
+     */
     public int responseCount(int index) {
         int total = 0;
         for (int response : responses.values()) {
@@ -51,38 +84,77 @@ public class StrawPoll {
             }
         }
         return total;
-    } // method responseCount
+    }
 
-    @SuppressWarnings("WeakerAccess")
+    /**
+     * Calculates the percent of responses for a given option.
+     *
+     * @param index The index of the option.
+     * @return the percent of responses for the given option.
+     */
     public double percent(int index) {
         return totalResponses() > 0 ? ((double) responseCount(index)) / ((double) totalResponses()) * 100d : 0;
-    } // method percent
+    }
 
+    /**
+     * Calculates the percent of responses for each option.
+     *
+     * @return an array containing the percent of responses for each option.
+     */
     public double[] percents() {
         double[] percents = new double[options.length];
         for (int i = 0; i < percents.length; i++) {
             percents[i] = percent(i);
         }
         return percents;
-    } // method percents
+    }
 
+    /**
+     * Builds a {@link String} containing the prompt, options, response counts, and response percents.
+     *
+     * @return the results of the poll as a {@link String}, including the prompt, options, response counts, and response
+     * percents.
+     */
     public String resultsAsString() {
-        String results = "Poll Results: \n" + getQuestion() + "\n";
+        StringBuilder builder = new StringBuilder();
+        builder.append("Poll Results: \n")
+                .append(getPrompt())
+                .append('\n');
         for (int i = 0; i < getOptions().length; ++i) {
-            results += "(" + i +")\t" + getOptions()[i] +
-                    "\n\t\tResponses: " + responseCount(i) + " Percent: " + percent(i) + "\n";
+            builder.append('(')
+                    .append(i)
+                    .append(")\t")
+                    .append(getOptions()[i])
+                    .append("\n\t\tResponses: ")
+                    .append(responseCount(i))
+                    .append(" Percent: ")
+                    .append(percent(i))
+                    .append("\n");
         }
-        results += "Total Responses: " + totalResponses();
-        return results;
-    } // method resultsAsString
+        builder.append("Total Responses: ")
+                .append(totalResponses());
+        return builder.toString();
+    }
 
+    /**
+     * @return a description of the poll, including the prompt and options.
+     */
     @Override
     public String toString() {
-        String message = "Poll: \n" + getQuestion() + "\n";
+        StringBuilder builder = new StringBuilder();
+        builder.append("Poll: \n")
+                .append(getPrompt())
+                .append('\n');
         for (int i = 0; i < getOptions().length; ++i) {
-            message += "(" + i +")\t" + getOptions()[i] + "\n";
+            builder.append("(")
+                    .append(i)
+                    .append(")\t")
+                    .append(getOptions()[i])
+                    .append("\n");
         }
-        message += "Total Responses: " + totalResponses();
-        return message;
-    } // method String
-} // class StrawPoll
+        builder.append("Total Responses: ")
+                .append(totalResponses());
+        return builder.toString();
+    }
+
+}

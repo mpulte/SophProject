@@ -1,47 +1,90 @@
 package com.discordbot.command;
 
-import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-import java.util.Map;
+import java.util.*;
 
+/**
+ * A {@link CommandListener} for handling the help command.
+ *
+ * @see CommandListener
+ */
+@Command(tag = "help", enabled = true)
 public class HelpCommand extends CommandListener {
 
-	public HelpCommand(CommandHandler handler) {
-		super(handler);
-	} // constructor
+    /**
+     * @param handler The {@link CommandHandler} the HelpCommand is bound to.
+     */
+    public HelpCommand(CommandHandler handler) {
+        super(handler);
+    }
 
-	@Override
-	public void onCommandReceived(CommandReceivedEvent event) {
-		MessageChannel channel = event.getMessageReceivedEvent().getChannel();
+    /**
+     * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
+     * a list of {@link CommandListener} and their respective descriptions. If there are arguments, it lists the help
+     * for the {@link CommandListener} passed as arguments.
+     *
+     * @param event The {@link CommandReceivedEvent} to handle.
+     */
+    @Override
+    public void onCommandReceived(CommandReceivedEvent event) {
+        MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 
-		if (getHandler() != null) {
+        if (getHandler() == null) {
+            channel.sendMessage("Unable to help at this time").queue();
+        } else if (event.getArgs().isEmpty()) {
             Map<String, CommandListener> commands = getHandler().getCommandListeners();
-            String message = "";
-            for (String key : commands.keySet()) {
-                message += CommandReceivedEvent.PREFIX + key + '\t' + commands.get(key).getDescription() + '\n';
+
+            MessageBuilder builder = new MessageBuilder();
+            List<String> keys = new LinkedList<>(commands.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
+                builder.append(CommandReceivedEvent.PREFIX)
+                        .append(key).append('\t')
+                        .append(commands.get(key).getDescription())
+                        .append('\n');
             }
-            if (!message.isEmpty()) {
-                channel.sendMessage(message.substring(0, message.length() - 1)).queue();
+            if (!builder.isEmpty()) {
+                builder.replaceLast("\n", "");
+                channel.sendMessage(builder.build()).queue();
             }
         } else {
-		    channel.sendMessage("Unable to help at this time").queue();
+            for (String argument : event.getArgs()) {
+                if (getHandler().isTag(argument)) {
+                    CommandListener command = getHandler().getCommandListeners().get(argument);
+                    channel.sendMessage(
+                            new MessageBuilder()
+                                    .append(CommandReceivedEvent.PREFIX)
+                                    .append(argument).append('\t')
+                                    .append(command.getDescription())
+                                    .append(" ")
+                                    .append(command.getHelp())
+                                    .build())
+                            .queue();
+                }
+            }
         }
-	} // method onCommandReceived
+    }
 
-	@Override
-	public boolean usesChannel(ChannelType type) {
-		return true;
-	} // method useChannel
+    /**
+     * Used for accessing a description of the HelpCommand.
+     *
+     * @return A {@link String} description of the HelpCommand.
+     */
+    @Override
+    public String getDescription() {
+        return "Lists available commands and their descriptions. Enter a command as an argument for additional help.";
+    }
 
-	@Override
-	public String getDescription() {
-		return "Lists available commands and their descriptions.";
-	} // method getDescription
-	
-	@Override
-	public String getHelp() {
-		return ""; // TODO: add help
-	} // method getHelp
+    /**
+     * Used for accessing receiving help for using the HelpCommand.
+     *
+     * @return A {@link String} description of help for the HelpCommand.
+     */
+    @Override
+    public String getHelp() {
+        return "";
+    }
 
-} // class HelpCommand
+}

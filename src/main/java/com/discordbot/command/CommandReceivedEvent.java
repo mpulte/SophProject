@@ -4,43 +4,93 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
+/**
+ * An event fired for every tag received that is a wrapper class for a {@link MessageReceivedEvent}.
+ */
 public class CommandReceivedEvent {
-	
-	public static String PREFIX = "!";
 
-	private MessageReceivedEvent event;
-	private String command;
-	private List<String> args;
+    /**
+     * The prefix for commands.
+     */
+    public static String PREFIX = "!";
 
-	private CommandReceivedEvent(MessageReceivedEvent event, String tag, List<String> args) {
-		this.event = event;
-		this.command = tag;
-		this.args = args;
-	} // constructor
-	
-	public static CommandReceivedEvent buildCommand(MessageReceivedEvent e) {
-		String message = e.getMessage().getContent().replaceFirst(CommandReceivedEvent.PREFIX, "").trim();
-		
-		// split the message by spaces, the first String will be the command, the rest are args
-		List<String> args = new ArrayList<>(Arrays.asList(message.split(" ")));
-		String command = args.get(0); // first item split is the command
-		args.remove(0); // remove command from args list
-		
-		return new CommandReceivedEvent(e, command, args);
-	} // method buildCommand
+    private MessageReceivedEvent event;
+    private String tag;
+    private List<String> args;
 
-	public MessageReceivedEvent getMessageReceivedEvent() {
-		return event;
-	} // method getEvent
+    /**
+     * @param event The {@link MessageReceivedEvent} causing this CommandReceivedEvent.
+     * @param tag   The tag identifying the command.
+     * @param args  The arguments passed with the command.
+     */
+    private CommandReceivedEvent(MessageReceivedEvent event, String tag, List<String> args) {
+        this.event = event;
+        this.tag = tag;
+        this.args = args;
+    }
 
-	public String getTag() {
-		return command;
-	} // method getTag
+    /**
+     * Builds a CommandReceivedEvent based on the {@link MessageReceivedEvent} provided. The {@link
+     * MessageReceivedEvent} is not checked for the {@link CommandReceivedEvent#PREFIX}.
+     *
+     * @param event The {@link MessageReceivedEvent} to handle.
+     * @return The resulting CommandReceivedEvent.
+     */
+    public static CommandReceivedEvent buildCommand(MessageReceivedEvent event) {
+        String message = event.getMessage().getContent().replaceFirst(CommandReceivedEvent.PREFIX, "").trim();
+        String command = "";
+        List<String> args = new ArrayList<>();
 
-	public List<String> getArgs() {
-		return args;
-	} // method getArgs
-	
-} // class Command
+        // split the message by spaces, the first String will be the tag, the rest are args
+        Iterator<String> words = new ArrayList<>(Arrays.asList(message.split(" "))).iterator();
+        if (words.hasNext()) {
+            command = words.next();
+        }
+        while (words.hasNext()) {
+            StringBuilder builder = new StringBuilder(words.next());
+            String arg;
+            while ((arg = builder.toString()).startsWith("\"") && !arg.endsWith("\"")) {
+                builder.append(' ').append(words.next());
+            }
+
+            // if arg is surrounded in quotes, remove the quotes
+            if (arg.startsWith("\"") && arg.startsWith("\"") && arg.length() > 1) {
+                arg = arg.substring(1, arg.length() - 1);
+            }
+            
+            args.add(arg);
+        }
+        return new CommandReceivedEvent(event, command, args);
+    }
+
+    /**
+     * Accessor for {@link MessageReceivedEvent} that caused this CommandReceivedEvent.
+     *
+     * @return The {@link MessageReceivedEvent} that caused this CommandReceivedEvent.
+     */
+    public MessageReceivedEvent getMessageReceivedEvent() {
+        return event;
+    }
+
+    /**
+     * Accessor for the command's tag.
+     *
+     * @return The command's tag.
+     */
+    public String getTag() {
+        return tag;
+    }
+
+    /**
+     * Accessor for the arguments passed with the command.
+     *
+     * @return The arguments passed with the command
+     */
+    public List<String> getArgs() {
+        return args;
+    }
+
+}
