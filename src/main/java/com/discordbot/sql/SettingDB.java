@@ -16,27 +16,46 @@ import java.util.List;
  */
 public class SettingDB extends SQLiteDatabase<Setting, String> {
 
-    private static final int DB_VERSION = 1;
+    protected static final int DB_VERSION = 1;
 
     // table constants
-    private static final String SETTING = "settings";
-    private static final String SETTING_KEY = "set_key";
-    private static final String SETTING_VALUE = "set_value";
+    protected final static String SETTING = "setting";
+    protected final static String SETTING_KEY = "set_key";
+    protected final static String SETTING_VALUE = "set_value";
 
     // create table statement
-    private static final String CREATE_TABLE_SETTING =
+    private final static String CREATE_TABLE_SETTING =
             "CREATE TABLE IF NOT EXISTS " + SETTING + " (" +
-                    SETTING_KEY + " TEXT     NOT NULL  PRIMARY KEY, " +
+                    SETTING_KEY +   " TEXT     NOT NULL  PRIMARY KEY, " +
                     SETTING_VALUE + " TEXT     NOT NULL);";
 
     // drop table statement
-    private static final String DROP_TABLE = "DROP TABLE IF EXISTS " + SETTING;
+    private final static String DROP_TABLE = "DROP TABLE IF EXISTS " + SETTING;
+
+    private final String TABLE;
 
     /**
      * Default constructor
      */
     public SettingDB() {
         super(DB_VERSION);
+        TABLE = SETTING;
+    }
+
+    /**
+     * Protected constructor to be used by subclasses
+     *
+     * @param table_name The name to use for the table.
+     */
+    protected SettingDB(String table_name) {
+        super(DB_VERSION);
+
+        // reserve setting table name for this class only
+        if (table_name.equals("setting")) {
+            throw new IllegalArgumentException("Table name cannot be setting");
+        }
+
+        TABLE = table_name;
     }
 
     /**
@@ -83,7 +102,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+        String query = "SELECT * FROM " + TABLE + " WHERE " + SETTING_KEY + " = ?";
 
         try {
             statement = connection.prepareStatement(query);
@@ -118,7 +137,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT * FROM " + SETTING + " ORDER BY " + SETTING_KEY;
+        String query = "SELECT * FROM " + TABLE + " ORDER BY " + SETTING_KEY;
 
         try {
             statement = connection.prepareStatement(query);
@@ -146,7 +165,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
      */
     @Override
     public int insert(Setting... settings) {
-        String query = "INSERT INTO " + SETTING +
+        String query = "INSERT INTO " + TABLE +
                 " (" + SETTING_KEY + "," + SETTING_VALUE + ")" +
                 "VALUES (?,?)";
 
@@ -165,7 +184,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
      */
     @Override
     public int update(Setting... settings) {
-        String query = "UPDATE " + SETTING + " SET " + SETTING_VALUE + " = ?" + " WHERE " + SETTING_KEY + " = ?";
+        String query = "UPDATE " + TABLE + " SET " + SETTING_VALUE + " = ?" + " WHERE " + SETTING_KEY + " = ?";
 
         int result = 0;
         for (Setting setting : settings) {
@@ -182,7 +201,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
      */
     @Override
     public int delete(String... keys) {
-        String query = "DELETE FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+        String query = "DELETE FROM " + TABLE + " WHERE " + SETTING_KEY + " = ?";
 
         int result = 0;
         for (String key : keys) {
@@ -207,7 +226,7 @@ public class SettingDB extends SQLiteDatabase<Setting, String> {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
-        String query = "SELECT " + SETTING_KEY + " FROM " + SETTING + " WHERE " + SETTING_KEY + " = ?";
+        String query = "SELECT " + SETTING_KEY + " FROM " + TABLE + " WHERE " + SETTING_KEY + " = ?";
 
         try {
             statement = connection.prepareStatement(query);

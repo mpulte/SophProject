@@ -1,6 +1,8 @@
 package com.discordbot.command;
 
+import com.discordbot.model.Setting;
 import com.discordbot.music.GuildMusicManager;
+import com.discordbot.sql.MusicSettingDB;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -33,7 +35,7 @@ public class MusicCommand extends CommandListener {
     private final Map<Long, GuildMusicManager> musicManagers;
 
     /**
-     * Constructor sets registers the {@link AudioPlayerManager} to the {@link AudioSourceManagers}
+     * Constructor sets registers the {@link AudioPlayerManager} to the {@link AudioSourceManagers}.
      */
     public MusicCommand() {
         musicManagers = new HashMap<>();
@@ -50,9 +52,22 @@ public class MusicCommand extends CommandListener {
      */
     private static void connectToVoiceChannel(AudioManager audioManager) {
         if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
-            List<VoiceChannel> voiceChannel = audioManager.getGuild().getVoiceChannels();
-            if (voiceChannel != null && !voiceChannel.isEmpty()) {
-                audioManager.openAudioConnection(voiceChannel.get(0));
+            Guild guild =  audioManager.getGuild();
+
+            // try to open previous channel from settings
+            Setting lastChannelSetting = (new MusicSettingDB()).select(guild.getId());
+            if (lastChannelSetting != null) {
+                VoiceChannel channel = guild.getVoiceChannelById(lastChannelSetting.getValue());
+                if (channel != null) {
+                    audioManager.openAudioConnection(channel);
+                    return;
+                }
+            }
+
+            // no previous channel or previous channel renamed, try to open first available channel
+            List<VoiceChannel> voiceChannels = guild.getVoiceChannels();
+            if (voiceChannels != null && !voiceChannels.isEmpty()) {
+                audioManager.openAudioConnection(voiceChannels.get(0));
             }
         }
     }
