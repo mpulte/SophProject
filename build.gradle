@@ -20,9 +20,21 @@ sourceSets {
 }
 
 dependencies {
+    // JDA
     compile 'net.dv8tion:JDA:3.0.0_157'
-    compile 'commons-io:commons-io:2.5'
-    compile 'org.xerial:sqlite-jdbc:3.16.1'
+
+    // GUI
     compile 'org.controlsfx:controlsfx:8.40.12'
+
+    // SQLite
+    compile 'org.xerial:sqlite-jdbc:3.16.1'
+
+    // lavaplayer
+    compile 'com.sedmelluq:lavaplayer:1.2.34'
+    compile 'org.slf4j:slf4j-nop:1.7.25'
+
+    // Tools
+    compile 'commons-io:commons-io:2.5'
     compile 'org.reflections:reflections:0.9.11'
+
 }
