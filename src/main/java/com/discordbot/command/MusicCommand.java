@@ -102,6 +102,8 @@ public class MusicCommand extends CommandListener {
             case "skip":
                 skip(channel);
                 break;
+            case "leave":
+            	leave(channel, guild.getAudioManager());
         }
     }
 
@@ -220,6 +222,12 @@ public class MusicCommand extends CommandListener {
         musicManager.getTrackScheduler().nextTrack();
 
         channel.sendMessage("Skipped to next track.").queue();
+    }
+    
+    private void leave(TextChannel channel, AudioManager audioManager) {
+    	audioManager.closeAudioConnection();
+    	
+    	channel.sendMessage("Leaving voice channel.").queue();
     }
 
     /**
