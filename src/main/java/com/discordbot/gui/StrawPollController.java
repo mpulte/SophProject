@@ -16,17 +16,22 @@ import javafx.scene.control.TextInputControl;
 import javafx.scene.layout.GridPane;
 import net.dv8tion.jda.core.entities.Channel;
 import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.events.ReadyEvent;
-import net.dv8tion.jda.core.events.ResumedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class StrawPollController implements FXMLController {
+/**
+ * A {@link FXMLController} implementation for controlling StrawPollPane.fxml.
+ *
+ * @see FXMLController
+ * @see DiscordBot.ChangeListener
+ */
+public class StrawPollController implements FXMLController, DiscordBot.ChangeListener {
 
+    @FXML
+    private GridPane gridPane;
     @FXML
     private Button startStopButton;
     @FXML
@@ -48,9 +53,45 @@ public class StrawPollController implements FXMLController {
     private List<Button> removeButtons = new ArrayList<>();
 
     private ResizeListener resizeListener = null;
-    private StatusListener statusListener = null;
     private StrawPoll poll = null;
 
+    /**
+     * Initializes the StrawPollController. It adds the first two rows of options and initializes the {@link
+     * #guildComboBox} and {@link #channelComboBox}.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or <tt>null</tt> if the
+     *                  location is not known.
+     * @param resources The resources used to localize the root object, or <tt>null</tt> if the root object was not
+     *                  localized.
+     * @see javafx.fxml.Initializable#initialize(URL, ResourceBundle)
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // add two options (the minimum)
+        addOption();
+        addOption();
+
+        // initialize combo boxes
+        updateGuildComboBox();
+        updateChannelComboBox();
+        guildComboBox.setOnAction(e -> updateChannelComboBox());
+
+        // initialize change listener
+        DiscordBot.getInstance().addChangeListener(this);
+    }
+
+    /**
+     * Removes this {@link DiscordBot.ChangeListener} from {@link DiscordBot} and calls {@link #stopListening()}.
+     */
+    @Override
+    public void stop() {
+        DiscordBot.getInstance().removeChangeListener(this);
+        stopListening();
+    }
+
+    /**
+     * Handles {@link #startStopButton} clicks.
+     */
     @FXML
     private synchronized void handleStartStopButton() {
         if (timer == null) {
@@ -58,20 +99,26 @@ public class StrawPollController implements FXMLController {
         } else {
             stopListening();
         }
-    } // method handleStartStopButton
+    }
 
+    /**
+     * Handles results button clicks.
+     */
     @FXML
     private void handleResultsButton() {
         if (DiscordBot.getInstance().isRunning() && filledOut(false) && poll != null) {
             DiscordBot.getInstance().getJDA().getTextChannelById(channelComboBox.getValue().getId())
                     .sendMessage(poll.resultsAsString()).queue();
         }
-    } // method handleResultsButton
+    }
 
+    /**
+     * Handles {@link #addOptionButton} clicks.
+     */
     @FXML
     private void handleAddOptionButton() {
         addOption();
-    } // method handleAddOptionButton
+    }
 
     private void addOption() {
         final int row = GridPane.getRowIndex(addOptionButton);
@@ -87,7 +134,6 @@ public class StrawPollController implements FXMLController {
         removeButtons.add(button);
 
         // add text field and button to grid pane and array lists
-        GridPane gridPane = (GridPane) addOptionButton.getParent();
         gridPane.add(textField, 1, row, 2, 1);
         gridPane.add(button, 3, row);
         gridPane.getChildren().remove(addOptionButton);
@@ -96,15 +142,17 @@ public class StrawPollController implements FXMLController {
         if (resizeListener != null) {
             resizeListener.onResize();
         }
-    } // method addOption
+    }
 
+    /**
+     * Handles {@link #removeButtons} clicks.
+     */
     private void removeOption(int row) {
         // don't allow less than 2 rows
         if (optionFields.size() <= 2) {
             return;
         }
 
-        GridPane gridPane = (GridPane) addOptionButton.getParent();
         List<Node> toRemove = new ArrayList<>();
         List<Node> toMove = new ArrayList<>();
 
@@ -116,7 +164,7 @@ public class StrawPollController implements FXMLController {
                     // remove text field from row to remove
                     toRemove.add(node);
                     optionFields.remove(node);
-                } else if (rowIndex > row){
+                } else if (rowIndex > row) {
                     // move text fields below the row to remove
                     toMove.add(node);
                 }
@@ -140,22 +188,20 @@ public class StrawPollController implements FXMLController {
 
             gridPane.getChildren().remove(node);
             if (node == addOptionButton) {
-                gridPane.getChildren().remove(node);
                 gridPane.add(node, colIndex, rowIndex - 1, 3, 1);
-            } else if (node instanceof TextField) {
-                gridPane.getChildren().remove(node);
+            } else {
                 gridPane.add(node, colIndex, rowIndex - 1, 2, 1);
-            } else if (node instanceof Button){
-                gridPane.getChildren().remove(node);
-                gridPane.add(node, colIndex, rowIndex - 1);
             }
         }
 
         if (resizeListener != null) {
             resizeListener.onResize();
         }
-    } // method removeOption
+    }
 
+    /**
+     * Starts the timer and adds a {@link StrawPollController} to the {@link CommandHandler}.
+     */
     private synchronized void startListening() {
         CommandHandler commandHandler = DiscordBot.getInstance().getCommandHandler();
         if (timer == null && filledOut(true) && !commandHandler.isTag(tagField.getText())) {
@@ -163,7 +209,7 @@ public class StrawPollController implements FXMLController {
             List<String> options = optionFields.stream().map(TextInputControl::getText).collect(Collectors.toList());
             poll = new StrawPoll(promptField.getText(), options.toArray(new String[options.size()]));
             commandHandler.addCommandListener(tagField.getText(),
-                    new StrawPollCommand(commandHandler, poll, channelComboBox.getValue().getId()));
+                    new StrawPollCommand(poll, channelComboBox.getValue().getId()));
 
             // post the poll
             if (DiscordBot.getInstance().isRunning()) {
@@ -176,8 +222,9 @@ public class StrawPollController implements FXMLController {
             timer = new Timer();
             timer.schedule(
                     new TimerTask() {
-                            @Override
-                            public void run() {
+                        @Override
+                        public void run() {
+                            Platform.runLater(() -> {
                                 int hours = timeField.getHours();
                                 int minutes = timeField.getMinutes();
                                 int seconds = timeField.getSeconds();
@@ -193,8 +240,15 @@ public class StrawPollController implements FXMLController {
                                     minutes = 59;
                                     seconds = 59;
                                 } else {
+                                    // post the poll
+                                    if (DiscordBot.getInstance().isRunning()) {
+                                        DiscordBot.getInstance().getJDA().getTextChannelById(channelComboBox.getValue().getId())
+                                                .sendMessage("Poll ended (" + CommandReceivedEvent.PREFIX + tagField.getText() + "):\n"
+                                                        + poll.resultsAsString()).queue();
+                                    }
+
                                     //  stop the timer
-                                    Platform.runLater(() -> stopListening());
+                                    stopListening();
                                     hours = minutes = seconds = 0;
                                 }
 
@@ -203,14 +257,18 @@ public class StrawPollController implements FXMLController {
                                 timeField.setText(format.format(hours)
                                         + ":" + format.format(minutes)
                                         + ":" + format.format(seconds));
-                            }
+                            });
+                        }
                     }, 0, 1000);
 
             startStopButton.setText("Stop");
             setEditable(false);
         }
-    } // method startListening
+    }
 
+    /**
+     * Starts the timer and removes a {@link StrawPollController} from the {@link CommandHandler}.
+     */
     private synchronized void stopListening() {
         // remove the command listener
         DiscordBot.getInstance().getCommandHandler().removeCommandListener(tagField.getText());
@@ -221,23 +279,22 @@ public class StrawPollController implements FXMLController {
             timer.purge();
             timer = null;
 
-            startStopButton.setText("Start");
+            Platform.runLater(() -> startStopButton.setText("Start"));
             setEditable(true);
-
-            // post the poll
-            if (DiscordBot.getInstance().isRunning()) {
-                DiscordBot.getInstance().getJDA().getTextChannelById(channelComboBox.getValue().getId())
-                        .sendMessage("Poll ended (" + CommandReceivedEvent.PREFIX + tagField.getText() + "):\n"
-                                + poll.resultsAsString()).queue();
-            }
         }
-    } // method stopListening
+    }
 
+    /**
+     * Checks that each Control is filled out. The {@link #timeField} is only checked if specified.
+     *
+     * @param checkTimer Specifies whether to check the {@link #timeField}.
+     * @return <tt>true</tt> if all Controls are filled out, <tt>false</tt> otherwise.
+     */
     private boolean filledOut(boolean checkTimer) {
         if (checkTimer && timeField.getHours() == 0 && timeField.getMinutes() == 0 && timeField.getSeconds() == 0) {
             timeField.requestFocus();
             return false;
-        } else if (tagField.getText().equals("")){
+        } else if (tagField.getText().equals("")) {
             tagField.requestFocus();
             return false;
         } else if (guildComboBox.getSelectionModel().getSelectedItem() == null) {
@@ -246,19 +303,24 @@ public class StrawPollController implements FXMLController {
         } else if (channelComboBox.getSelectionModel().getSelectedItem() == null) {
             channelComboBox.requestFocus();
             return false;
-        } else if (promptField.getText().equals("")){
+        } else if (promptField.getText().equals("")) {
             promptField.requestFocus();
             return false;
         }
         for (TextField field : optionFields) {
-            if (field.getText().equals("")){
+            if (field.getText().equals("")) {
                 field.requestFocus();
                 return false;
             }
         }
         return true;
-    } // method filledOut
+    }
 
+    /**
+     * Enables or disables editing of the Controls.
+     *
+     * @param enabled Whether editing should be enabled (<tt>true</tt>) or disabled(<tt>false</tt>).
+     */
     private void setEditable(boolean enabled) {
         timeField.setEditable(enabled);
         tagField.setEditable(enabled);
@@ -269,102 +331,101 @@ public class StrawPollController implements FXMLController {
         for (Button button : removeButtons) {
             button.setDisable(!enabled);
         }
-    } // method setEditable
+    }
 
+    /**
+     * Updates the list of {@link Guild}s in the {@link #guildComboBox}.
+     */
     private void updateGuildComboBox() {
         ComboBoxEntry oldEntry = guildComboBox.getValue();
 
-        if (DiscordBot.getInstance().isRunning()) {
-            for (Guild guild : DiscordBot.getInstance().getJDA().getGuilds()) {
-                ComboBoxEntry entry = new ComboBoxEntry(guild.getId(), guild.getName());
-                guildComboBox.getItems().add(entry);
-                if (oldEntry != null && guild.getId().equals(oldEntry.getId())) {
-                    guildComboBox.setValue(entry);
+        Platform.runLater(() -> {
+            guildComboBox.setItems(FXCollections.observableArrayList());
+            if (DiscordBot.getInstance().isRunning() && DiscordBot.getInstance().getJDA() != null) {
+                for (Guild guild : DiscordBot.getInstance().getJDA().getGuilds()) {
+                    ComboBoxEntry entry = new ComboBoxEntry(guild.getId(), guild.getName());
+                    guildComboBox.getItems().add(entry);
+                    if (oldEntry != null && guild.getId().equals(oldEntry.getId())) {
+                        guildComboBox.setValue(entry);
+                    }
                 }
             }
-        }
-    } // method updateGuildComboBox
+        });
+    }
 
+    /**
+     * Updates the list of {@link Channel}s in the {@link #channelComboBox}.
+     */
     private void updateChannelComboBox() {
         ComboBoxEntry oldEntry = channelComboBox.getValue();
 
-        channelComboBox.setItems(FXCollections.observableArrayList());
-        if (DiscordBot.getInstance().isRunning() && guildComboBox.getValue() != null) {
-            Guild guild = DiscordBot.getInstance().getJDA().getGuildById(guildComboBox.getValue().getId());
-            for (Channel channel : guild.getTextChannels()) {
-                ComboBoxEntry entry = new ComboBoxEntry(channel.getId(), channel.getName());
-                channelComboBox.getItems().add(entry);
-                if (oldEntry != null && channel.getId().equals(oldEntry.getId())) {
-                    channelComboBox.setValue(entry);
+        Platform.runLater(() -> {
+            channelComboBox.setItems(FXCollections.observableArrayList());
+            if (DiscordBot.getInstance().isRunning() && guildComboBox.getValue() != null
+                    && DiscordBot.getInstance().getJDA() != null) {
+                Guild guild = DiscordBot.getInstance().getJDA().getGuildById(guildComboBox.getValue().getId());
+                if (guild != null) {
+                    for (Channel channel : guild.getTextChannels()) {
+                        ComboBoxEntry entry = new ComboBoxEntry(channel.getId(), channel.getName());
+                        channelComboBox.getItems().add(entry);
+                        if (oldEntry != null && channel.getId().equals(oldEntry.getId())) {
+                            channelComboBox.setValue(entry);
+                        }
+                    }
                 }
             }
-        }
-    } // method updateChannelComboBox
+        });
+    }
 
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        // add two options (the minimum);
-        addOption();
-        addOption();
-
-        updateGuildComboBox();
-        updateChannelComboBox();
-        guildComboBox.setOnAction(e -> updateChannelComboBox());
-
-        statusListener = new StatusListener();
-        DiscordBot.getInstance().addEventListener(statusListener);
-    } // method initialize
-
-    @Override
-    public void stop() {
-        DiscordBot.getInstance().removeEventListener(statusListener);
-        stopListening();
-    } // method stop
-
+    /**
+     * Sets the {@link ResizeListener}.
+     *
+     * @param listener The {@link ResizeListener} to set.
+     */
     @Override
     public void setResizeListener(ResizeListener listener) {
         resizeListener = listener;
     }
 
+    /**
+     * Called when {@link DiscordBot} is started.
+     */
+    @Override
+    public void onStart() {
+        updateGuildComboBox();
+        updateChannelComboBox();
+    }
+
+    /**
+     * Called when {@link DiscordBot} is stopped.
+     */
+    @Override
+    public void onStop() {
+        stopListening();
+    }
+
+    /**
+     * An entry for a {@link ComboBox} with an id and name. The name is displayed in the {@link ComboBox}. ComboBoxEntry
+     * is used by {@link #guildComboBox} and {@link #channelComboBox}.
+     */
     private class ComboBoxEntry {
 
         private String id;
         private String name;
 
-        public ComboBoxEntry(String id, String name) {
+        ComboBoxEntry(String id, String name) {
             this.id = id;
             this.name = name;
-        } // constructor
+        }
 
-        public String getId() {
+        String getId() {
             return id;
-        } // method getId
+        }
 
         @Override
         public String toString() {
             return name;
         }
-    } // class ComboBoxEntry
+    }
 
-    private class StatusListener extends ListenerAdapter {
-
-        @Override
-        public void onReady(ReadyEvent event) {
-            callUpdates();
-        } // method onReady
-
-        @Override
-        public void onResume(ResumedEvent event) {
-            callUpdates();
-        } // method onResume
-
-        private void callUpdates() {
-            Platform.runLater(() -> {
-                updateGuildComboBox();
-                updateChannelComboBox();
-            });
-        } // method callUpdates
-
-    } // class StatusListener
-
-} // class StrawPollController
+}

@@ -5,14 +5,23 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.exceptions.GuildUnavailableException;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 
+/**
+ * A {@link CommandListener} for handling the kick command.
+ *
+ * @see CommandListener
+ */
+@Command(tag = "kick")
 public class KickCommand extends CommandListener {
 
-    public KickCommand(CommandHandler handler) {
-        super(handler);
-    } // constructor
-
+    /**
+     * Handles any {@link CommandReceivedEvent}. The KickCommand kicks any {@link User} mentioned from the {@link Guild}
+     * the of the {@link Channel} the {@link CommandReceivedEvent} was received on.
+     *
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
+     */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         // event information
         Message message = event.getMessageReceivedEvent().getMessage();
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
@@ -42,26 +51,44 @@ public class KickCommand extends CommandListener {
             } catch (PermissionException ex) {
                 channel.sendMessage("Cannot kick " + member.getEffectiveName() + ", I don't have permission").queue();
             } catch (IllegalArgumentException ex) {
-                channel.sendMessage("Cannot kick " + member.getEffectiveName() + ", they are not a guild member").queue();
+                channel.sendMessage(
+                        "Cannot kick " + member.getEffectiveName() + ", they are not a guild member").queue();
             } catch (GuildUnavailableException ex) {
                 System.out.println("Cannot kick " + member.getEffectiveName() + ", guild temporarily unavailable");
             }
-        } // for
-    } // method onCommandReceived
+        }
+    }
 
+    /**
+     * Used for identifying if a {@link CommandReceivedEvent} should be sent to the KickCommand. The KickCommand only
+     * works on channels of type {@link ChannelType#TEXT}.
+     *
+     * @param type The {@link ChannelType} to use.
+     * @return True if the KickCommand uses the {@link ChannelType}. False otherwise.
+     */
     @Override
     public boolean usesChannel(ChannelType type) {
         return type == ChannelType.TEXT;
-    } // method useChannel
+    }
 
+    /**
+     * Used for accessing a description of the KickCommand.
+     *
+     * @return A {@link String} description of the KickCommand.
+     */
     @Override
     public String getDescription() {
-        return "Kicks all users mentioned. Author and bot must have permission. Bot must be above users in hierarchy.";
-    } // method getDescription
+        return "Kicks all users mentioned.";
+    }
 
+    /**
+     * Used for receiving help for using the KickCommand.
+     *
+     * @return A {@link String} description of help for the KickCommand.
+     */
     @Override
     public String getHelp() {
-        return ""; // TODO: add help
-    } // method getHelp
+        return "The author and bot must have permission. The bot must be above users in hierarchy.";
+    }
 
-} // class KickCommand
+}
