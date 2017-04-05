@@ -1,6 +1,5 @@
 package com.discordbot.sql;
 
-import com.discordbot.command.CommandListener;
 import com.discordbot.command.CommandSetting;
 
 import java.sql.Connection;
@@ -15,7 +14,7 @@ import java.util.List;
  *
  * @see SQLiteDatabase
  */
-public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends CommandListener>> {
+public class CommandDB extends SQLiteDatabase<CommandSetting, String> {
 
     private static final int DB_VERSION = 1;
 
@@ -73,11 +72,11 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     /**
      * Selects a {@link CommandSetting}.
      *
-     * @param cls The {@link Class} of the {@link CommandSetting} to select.
+     * @param className The {@link Class} of the {@link CommandSetting} to select.
      * @return the {@link CommandSetting} or null if no such {@link CommandSetting} exists.
      */
     @Override
-    public CommandSetting select(Class<? extends CommandListener> cls) {
+    public CommandSetting select(String className) {
         Connection connection = connectionPool.getConnection();
         if (connection == null) {
             return null;
@@ -90,7 +89,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setString(1, cls.getName());
+            statement.setString(1, className);
             resultSet = statement.executeQuery();
             CommandSetting setting = null;
             if (resultSet.next()) {
@@ -138,10 +137,46 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
                             resultSet.getString(COMMAND_TAG),
                             Boolean.parseBoolean(resultSet.getString(COMMAND_IS_ENABLED))));
                 } catch (ClassNotFoundException e) {
-                    LOG.log(e);
+                    // class not found means that a class was renamed, moved, or deleted
+                    // it should be addressed when the application is initialized, use selectAllKeys to get the key
+                    LOG.warn(e.getMessage());
                 }
             }
             return settings;
+        } catch (SQLException e) {
+            LOG.log(e);
+            return null;
+        } finally {
+            DBUtil.closeResultSet(resultSet);
+            DBUtil.closePreparedStatement(statement);
+            connectionPool.freeConnection(connection);
+        }
+    }
+
+    /**
+     * Selects all class names.
+     *
+     * @return a {@link List<String>} of class names.
+     */
+    public List<String> selectAllKeys() {
+        Connection connection = connectionPool.getConnection();
+        if (connection == null) {
+            return null;
+        }
+
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        String query = "SELECT " + COMMAND_CLASS + " FROM " + COMMAND + " ORDER BY " + COMMAND_CLASS;
+
+        try {
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+            List<String> tags = new ArrayList<>();
+            while (resultSet.next()) {
+                tags.add(resultSet.getString(1));
+            }
+            return tags;
         } catch (SQLException e) {
             LOG.log(e);
             return null;
@@ -200,16 +235,16 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     /**
      * Deletes one or more {@link CommandSetting}.
      *
-     * @param classes The {@link Class}s of the {@link CommandSetting}s to delete.
+     * @param classNames The class names of the {@link CommandSetting}s to delete.
      * @return the number of {@link CommandSetting}s deleted.
      */
     @Override
-    public int delete(Class... classes) {
+    public int delete(String... classNames) {
         String query = "DELETE FROM " + COMMAND + " WHERE " + COMMAND_CLASS + " = ?";
 
         int result = 0;
-        for (Class cls : classes) {
-            result += query(query, cls.getName());
+        for (String className : classNames) {
+            result += query(query, className);
         }
         return result;
     }
@@ -217,11 +252,11 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
     /**
      * Checks if a {@link CommandSetting} of a given {@link Class} exists.
      *
-     * @param cls The {@link Class}s of the {@link CommandSetting}.
+     * @param className The class name of the {@link CommandSetting}.
      * @return <tt>true</tt> if a {@link CommandSetting} exists, <tt>false</tt> otherwise.
      */
     @Override
-    public boolean exists(Class<? extends CommandListener> cls) {
+    public boolean exists(String className) {
         Connection connection = connectionPool.getConnection();
         if (connection == null) {
             return false;
@@ -234,7 +269,7 @@ public class CommandDB extends SQLiteDatabase<CommandSetting, Class<? extends Co
 
         try {
             statement = connection.prepareStatement(query);
-            statement.setString(1, cls.getName());
+            statement.setString(1, className);
             resultSet = statement.executeQuery();
             return resultSet.next();
         } catch (SQLException e) {

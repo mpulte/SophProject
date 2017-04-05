@@ -3,7 +3,10 @@ package com.discordbot.command;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.MessageChannel;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link CommandListener} for handling the help command.
@@ -14,27 +17,21 @@ import java.util.*;
 public class HelpCommand extends CommandListener {
 
     /**
-     * @param handler The {@link CommandHandler} the HelpCommand is bound to.
-     */
-    public HelpCommand(CommandHandler handler) {
-        super(handler);
-    }
-
-    /**
      * Handles any {@link CommandReceivedEvent}. Replies on the same {@link net.dv8tion.jda.core.entities.Channel} with
      * a list of {@link CommandListener} and their respective descriptions. If there are arguments, it lists the help
      * for the {@link CommandListener} passed as arguments.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
 
-        if (getHandler() == null) {
+        if (handler == null) {
             channel.sendMessage("Unable to help at this time").queue();
         } else if (event.getArgs().isEmpty()) {
-            Map<String, CommandListener> commands = getHandler().getCommandListeners();
+            Map<String, CommandListener> commands = handler.getCommandListeners();
 
             MessageBuilder builder = new MessageBuilder();
             List<String> keys = new LinkedList<>(commands.keySet());
@@ -51,8 +48,8 @@ public class HelpCommand extends CommandListener {
             }
         } else {
             for (String argument : event.getArgs()) {
-                if (getHandler().isTag(argument)) {
-                    CommandListener command = getHandler().getCommandListeners().get(argument);
+                if (handler.isTag(argument)) {
+                    CommandListener command = handler.getCommandListeners().get(argument);
                     channel.sendMessage(
                             new MessageBuilder()
                                     .append(CommandReceivedEvent.PREFIX)
@@ -78,7 +75,7 @@ public class HelpCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the HelpCommand.
+     * Used for receiving help using the HelpCommand.
      *
      * @return A {@link String} description of help for the HelpCommand.
      */

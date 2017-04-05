@@ -25,8 +25,8 @@ public class CommandLoader {
      */
     public CommandLoader(String classPath) {
         Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .filterInputsBy(new FilterBuilder().includePackage("com.discordbot"))
-                .setUrls(ClasspathHelper.forPackage("com.discordbot"))
+                .filterInputsBy(new FilterBuilder().includePackage(classPath))
+                .setUrls(ClasspathHelper.forPackage(classPath))
                 .setScanners(new SubTypesScanner(), new TypeAnnotationsScanner()));
 
         Set<Class<? extends CommandListener>> subTypes = reflections.getSubTypesOf(CommandListener.class);
@@ -55,15 +55,13 @@ public class CommandLoader {
     /**
      * Constructs {@link CommandListener} instances using the classes found by {@link Reflections} constructor.
      *
-     * @param commandHandler The {@link CommandHandler} to use for initializing the {@link CommandListener}s. Can be
-     *                       <tt>null</tt>.
      * @return a {@link List<CommandListener>} of the {@link CommandListener}s constructed.
      */
-    public List<CommandListener> getInstances(CommandHandler commandHandler) {
+    public List<CommandListener> getInstances() {
         List<CommandListener> listeners = new ArrayList<>();
         for (CommandSetting setting : commandSettings) {
             try {
-                listeners.add(setting.getCls().getConstructor(CommandHandler.class).newInstance(commandHandler));
+                listeners.add(setting.getCls().getConstructor().newInstance());
             } catch (Exception e) {
                 SimpleLog.getLog("CommandLoader").log(e);
             }

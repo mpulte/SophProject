@@ -7,39 +7,32 @@ import net.dv8tion.jda.core.entities.ChannelType;
  */
 public abstract class CommandListener {
 
-    private CommandHandler handler;
-
     /**
-     * @param handler The {@link CommandHandler} the CommandListener is bound to.
-     */
-    public CommandListener(CommandHandler handler) {
-        this.handler = handler;
-    }
-
-    /**
-     * Accessor for the {@link CommandHandler} field.
-     *
-     * @return The {@link CommandHandler} the CommandListener is bound to.
-     */
-    public CommandHandler getHandler() {
-        return handler;
-    }
-
-    /**
-     * Accessor for the {@link CommandHandler} field.
-     *
-     * @param handler The {@link CommandHandler} the CommandListener is bound to.
-     */
-    public void setHandler(CommandHandler handler) {
-        this.handler = handler;
-    }
-
-    /**
-     * Handles any {@link CommandReceivedEvent}.
+     * Handles any {@link CommandReceivedEvent}. Calls {@link #onCommandReceived(CommandReceivedEvent, CommandHandler)}
+     * if and only if the {@link ChannelType} of the {@link net.dv8tion.jda.core.events.message.MessageReceivedEvent}
+     * passes {@link #usesChannel(ChannelType)};
      *
      * @param event The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
+     * @throws IllegalArgumentException if the {@link ChannelType} is not allowed.
      */
-    public abstract void onCommandReceived(CommandReceivedEvent event);
+    public final void handleCommandReceived(CommandReceivedEvent event, CommandHandler handler)
+            throws IllegalArgumentException {
+        if (!usesChannel(event.getMessageReceivedEvent().getChannelType())) {
+            throw new IllegalArgumentException("Channel type not allowed");
+        }
+        onCommandReceived(event, handler);
+    }
+
+    /**
+     * Handles any {@link CommandReceivedEvent}. Called by {@link #handleCommandReceived(CommandReceivedEvent,
+     * CommandHandler)}} if and only if the {@link ChannelType} of the
+     * {@link net.dv8tion.jda.core.events.message.MessageReceivedEvent} passes {@link #usesChannel(ChannelType)};
+     *
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
+     */
+    protected abstract void onCommandReceived(CommandReceivedEvent event, CommandHandler handler);
 
     /**
      * Used for identifying if a {@link CommandReceivedEvent} should be sent to the CommandListener.

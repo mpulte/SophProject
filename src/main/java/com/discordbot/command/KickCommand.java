@@ -14,20 +14,14 @@ import net.dv8tion.jda.core.exceptions.PermissionException;
 public class KickCommand extends CommandListener {
 
     /**
-     * @param handler The {@link CommandHandler} the KickCommand is bound to.
-     */
-    public KickCommand(CommandHandler handler) {
-        super(handler);
-    }
-
-    /**
      * Handles any {@link CommandReceivedEvent}. The KickCommand kicks any {@link User} mentioned from the {@link Guild}
      * the of the {@link Channel} the {@link CommandReceivedEvent} was received on.
      *
-     * @param event The {@link CommandReceivedEvent} to handle.
+     * @param event   The {@link CommandReceivedEvent} to handle.
+     * @param handler The {@link CommandHandler} that pushed the {@link CommandReceivedEvent}.
      */
     @Override
-    public void onCommandReceived(CommandReceivedEvent event) {
+    public void onCommandReceived(CommandReceivedEvent event, CommandHandler handler) {
         // event information
         Message message = event.getMessageReceivedEvent().getMessage();
         MessageChannel channel = event.getMessageReceivedEvent().getChannel();
@@ -57,7 +51,8 @@ public class KickCommand extends CommandListener {
             } catch (PermissionException ex) {
                 channel.sendMessage("Cannot kick " + member.getEffectiveName() + ", I don't have permission").queue();
             } catch (IllegalArgumentException ex) {
-                channel.sendMessage("Cannot kick " + member.getEffectiveName() + ", they are not a guild member").queue();
+                channel.sendMessage(
+                        "Cannot kick " + member.getEffectiveName() + ", they are not a guild member").queue();
             } catch (GuildUnavailableException ex) {
                 System.out.println("Cannot kick " + member.getEffectiveName() + ", guild temporarily unavailable");
             }
@@ -87,7 +82,7 @@ public class KickCommand extends CommandListener {
     }
 
     /**
-     * Used for accessing receiving help for using the KickCommand.
+     * Used for receiving help for using the KickCommand.
      *
      * @return A {@link String} description of help for the KickCommand.
      */
