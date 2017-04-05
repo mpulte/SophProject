@@ -7,7 +7,9 @@ import com.discordbot.gui.ProfanityFilterController;
 import com.discordbot.gui.StageHandler;
 import com.discordbot.gui.TokenController;
 import com.discordbot.model.ProfanityFilter;
+import com.discordbot.model.Setting;
 import com.discordbot.sql.CommandDB;
+import com.discordbot.sql.MusicSettingDB;
 import com.discordbot.util.IOUtils;
 import com.discordbot.util.MessageListener;
 import com.discordbot.util.ProfanityFilterListener;
@@ -22,6 +24,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.io.IOException;
@@ -170,6 +175,35 @@ public class DiscordBotApp extends Application {
         } catch (InvalidKeyException e) {
             LOG.warn(e.getMessage());
         }
+
+        // set up listener for VoiceChannel changes
+        DiscordBot.getInstance().addEventListener(new ListenerAdapter() {
+            @Override
+            public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
+                if (event.getMember().getUser().getId().equals(
+                        DiscordBot.getInstance().getJDA().getSelfUser().getId())) {
+                    MusicSettingDB database = new MusicSettingDB();
+                    if (database.exists(event.getGuild().getId())) {
+                        database.update(new Setting(event.getGuild().getId(), event.getChannelJoined().getId()));
+                    } else {
+                        database.insert(new Setting(event.getGuild().getId(), event.getChannelJoined().getId()));
+                    }
+                }
+            }
+
+            @Override
+            public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
+                if (event.getMember().getUser().getId().equals(
+                        DiscordBot.getInstance().getJDA().getSelfUser().getId())) {
+                    MusicSettingDB database = new MusicSettingDB();
+                    if (database.exists(event.getGuild().getId())) {
+                        database.update(new Setting(event.getGuild().getId(), event.getChannelJoined().getId()));
+                    } else {
+                        database.insert(new Setting(event.getGuild().getId(), event.getChannelJoined().getId()));
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -183,11 +217,8 @@ public class DiscordBotApp extends Application {
 
             // load each command that is listed in defaults
             CommandDB database = new CommandDB();
-            for(
-            CommandSetting defaultSetting :defaults)
-
-            {
-                CommandSetting savedSetting = database.select(defaultSetting.getCls());
+            for (CommandSetting defaultSetting : defaults) {
+                CommandSetting savedSetting = database.select(defaultSetting.getCls().getName());
                 if (savedSetting == null) {
                     if (defaultSetting.isEnabled()) {
                         DiscordBot.getInstance().getCommandHandler().setCommandListener(defaultSetting);
@@ -202,19 +233,16 @@ public class DiscordBotApp extends Application {
             }
 
             // remove commands not listed in defaults from database
-            for(
-            CommandSetting savedSetting :database.selectAll())
-
-            {
+            for (String cls : database.selectAllKeys()) {
                 boolean found = false;
-                for (CommandSetting defaultSetting : defaults) {
-                    if (savedSetting.equals(defaultSetting)) {
+                for (CommandSetting setting : defaults) {
+                    if (setting.getCls().getName().equals(cls)) {
                         found = true;
                         break;
                     }
                 }
                 if (!found) {
-                    database.delete(savedSetting.getCls());
+                    database.delete(cls);
                 }
             }
         }).start();
