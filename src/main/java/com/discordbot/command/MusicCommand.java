@@ -52,7 +52,7 @@ public class MusicCommand extends CommandListener {
      */
     private static void connectToVoiceChannel(AudioManager audioManager) {
         if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
-            Guild guild =  audioManager.getGuild();
+            Guild guild = audioManager.getGuild();
 
             // try to open previous channel from settings
             Setting lastChannelSetting = (new MusicSettingDB()).select(guild.getId());
@@ -102,6 +102,8 @@ public class MusicCommand extends CommandListener {
             case "skip":
                 skip(channel);
                 break;
+            case "leave":
+                leave(channel, guild.getAudioManager());
         }
     }
 
@@ -174,9 +176,9 @@ public class MusicCommand extends CommandListener {
     /**
      * Connects the bot to a {@link VoiceChannel} and queues an {@link AudioTrack}.
      *
-     * @param guild The {@link Guild} to play the music on.
+     * @param guild        The {@link Guild} to play the music on.
      * @param musicManager The {@link GuildMusicManager} to use.
-     * @param track The {@link AudioTrack} to queue.
+     * @param track        The {@link AudioTrack} to queue.
      */
     private void play(Guild guild, GuildMusicManager musicManager, AudioTrack track) {
         connectToVoiceChannel(guild.getAudioManager());
@@ -187,7 +189,7 @@ public class MusicCommand extends CommandListener {
     /**
      * Resumes playback.
      *
-     * @param channel  The {@link TextChannel} to reply on.
+     * @param channel The {@link TextChannel} to reply on.
      */
     private void resume(TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
@@ -200,7 +202,7 @@ public class MusicCommand extends CommandListener {
     /**
      * Pauses playback.
      *
-     * @param channel  The {@link TextChannel} to reply on.
+     * @param channel The {@link TextChannel} to reply on.
      */
     private void pause(TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
@@ -213,13 +215,27 @@ public class MusicCommand extends CommandListener {
     /**
      * Skips the currently playing track.
      *
-     * @param channel  The {@link TextChannel} to reply on.
+     * @param channel The {@link TextChannel} to reply on.
      */
     private void skip(TextChannel channel) {
         GuildMusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
         musicManager.getTrackScheduler().nextTrack();
 
         channel.sendMessage("Skipped to next track.").queue();
+    }
+
+    /**
+     * Leaves the {@link net.dv8tion.jda.core.entities.AudioChannel} and closes the {@link
+     * net.dv8tion.jda.core.audio.AudioConnection}.
+     *
+     * @param channel      The {@link TextChannel} to reply on.
+     * @param audioManager The {@link AudioManager} with the {@link net.dv8tion.jda.core.audio.AudioConnection} to
+     *                     close.
+     */
+    private void leave(TextChannel channel, AudioManager audioManager) {
+        audioManager.closeAudioConnection();
+
+        channel.sendMessage("Leaving voice channel.").queue();
     }
 
     /**
