@@ -60,13 +60,15 @@ public class ControlPane extends HBox {
                                 Platform.runLater(() -> startStopButton.setText("Stop"));
                             }
                         } catch (InvalidKeyException e1) {
-                            LOG.warn(e1.getMessage());
-                            try {
-                                URL location = getClass().getResource("../gui/TokenPane.fxml");
-                                StageHandler.getInstance().openStage("Tokens", location, null, "Tokens", false, 1);
-                            } catch (IOException e2) {
-                                LOG.log(e2);
-                            }
+                            Platform.runLater(() -> {
+                                LOG.warn(e1.getMessage());
+                                try {
+                                    URL location = getClass().getResource("../gui/TokenPane.fxml");
+                                    StageHandler.getInstance().openStage("Tokens", location, null, "Tokens", false, 1);
+                                } catch (IOException e2) {
+                                    LOG.log(e2);
+                                }
+                            });
                         }
                     } else {
                         bot.pause();
@@ -137,7 +139,7 @@ public class ControlPane extends HBox {
             // update only if color has changed and we are not switching from SHUTDOWN to SHUTTING_DOWN or DISCONNECTED
             if (getColor(newStatus) != getColor(oldStatus)
                     && !(oldStatus == JDA.Status.SHUTDOWN
-                            && (newStatus == JDA.Status.SHUTTING_DOWN || newStatus == JDA.Status.DISCONNECTED))) {
+                    && (newStatus == JDA.Status.SHUTTING_DOWN || newStatus == JDA.Status.DISCONNECTED))) {
                 updateColor(getColor(newStatus));
             }
         }
@@ -183,6 +185,8 @@ public class ControlPane extends HBox {
     /**
      * The possible colors of the status pane.
      */
-    private enum PaneColor { RED, YELLOW, GREEN }
+    private enum PaneColor {
+        RED, YELLOW, GREEN
+    }
 
 }
